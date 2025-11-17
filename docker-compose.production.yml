@@ -2,7 +2,7 @@ volumes:
   production_postgres_data: {}
   production_postgres_data_backups: {}
   production_traefik: {}
-  
+
 
 
 services:
@@ -10,8 +10,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
-
-    image: high_desert_happenings_production_django
+    image: ${REGISTRY}/${IMAGE_NAME}-django:latest
     depends_on:
       - postgres
       - redis
@@ -24,7 +23,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
-    image: high_desert_happenings_production_postgres
+    image: ${REGISTRY}/${IMAGE_NAME}-postgres:latest
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
       - production_postgres_data_backups:/backups
@@ -35,7 +34,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/traefik/Dockerfile
-    image: high_desert_happenings_production_traefik
+    image: ${REGISTRY}/${IMAGE_NAME}-traefik:latest
     depends_on:
       - django
     volumes:
@@ -46,12 +45,13 @@ services:
 
   redis:
     image: docker.io/redis:7.2
-    
+
 
   awscli:
     build:
       context: .
       dockerfile: ./compose/production/aws/Dockerfile
+    image: ${REGISTRY}/${IMAGE_NAME}-awscli:latest
     env_file:
       - ./.envs/.production/.django
     volumes:
