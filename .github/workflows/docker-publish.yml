@@ -22,7 +22,6 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -31,10 +30,18 @@ jobs:
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    # Matrix applies the same steps to each service
+    strategy:
+      matrix:
+        include:
+          - service: django
+            dockerfile: ./compose/production/django/Dockerfile
+          - service: postgres
+            dockerfile: ./compose/production/postgres/Dockerfile
+          - service: awscli
+            dockerfile: ./compose/production/aws/Dockerfile
 
+    steps:
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
       - name: Install cosign
@@ -65,30 +72,33 @@ jobs:
         id: meta
         uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.service }}
 
-      # Build with Docker Compose
-      - name: Build Docker images
-        run: docker compose -f docker-compose.production.yml build
+      # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: Build and push ${{ matrix.service }} image
+        id: build-and-push
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        with:
+          context: .
+          dockerfile: ${{ matrix.dockerfile }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      # Push images (only if not a PR)
-      - name: Push Docker images
-        if: github.event_name != 'pull_request'
-        run: |
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-django:latest
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-postgres:latest
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-awscli:latest
-
-      # Sign the resulting Docker images except on PRs.
+      # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
       # repository is public to avoid leaking data.  If you would like to publish
       # transparency data even for private images, pass --force to cosign below.
       # https://github.com/sigstore/cosign
-      - name: Sign the published Docker images
+      - name: Sign the published ${{ matrix.service }} image
         if: ${{ github.event_name != 'pull_request' }}
+        env:
+          # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
+          TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
-        run: |
-          cosign sign --yes ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-django:latest
-          cosign sign --yes ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-postgres:latest
-          cosign sign --yes ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-awscli:latest
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
