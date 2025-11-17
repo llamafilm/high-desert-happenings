@@ -74,7 +74,10 @@ jobs:
       # Push images (only if not a PR)
       - name: Push Docker images
         if: github.event_name != 'pull_request'
-        run: docker compose -f docker-compose.production.yml push
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-django:latest
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-postgres:latest
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-awscli:latest
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
