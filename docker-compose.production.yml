@@ -9,7 +9,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
-    image: ${REGISTRY}/${IMAGE_NAME}-django:latest
+    image: ${REGISTRY}/${IMAGE_NAME}-django:main
     depends_on:
       - postgres
       - redis
@@ -24,7 +24,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
-    image: ${REGISTRY}/${IMAGE_NAME}-postgres:latest
+    image: ${REGISTRY}/${IMAGE_NAME}-postgres:main
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
       - production_postgres_data_backups:/backups
@@ -52,7 +52,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/aws/Dockerfile
-    image: ${REGISTRY}/${IMAGE_NAME}-awscli:latest
+    image: ${REGISTRY}/${IMAGE_NAME}-awscli:main
     env_file:
       - ./.envs/.production/.django
     volumes:
