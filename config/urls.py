@@ -4,10 +4,12 @@ from django.contrib import admin
 from django.urls import include
 from django.urls import path
 from django.views import defaults as default_views
+from django.views.generic import RedirectView
 from django.views.generic import TemplateView
+from django.views.i18n import JavaScriptCatalog
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
+    path("", RedirectView.as_view(url="/events/", permanent=False)),
     path(
         "about/",
         TemplateView.as_view(template_name="pages/about.html"),
@@ -19,7 +21,14 @@ urlpatterns = [
     path("users/", include("high_desert_happenings.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
-    # ...
+    path("", include("high_desert_happenings.hdh.urls")),
+    # JavaScript i18n catalog for django-recurrence
+    path(
+        "jsi18n/",
+        JavaScriptCatalog.as_view(packages=["recurrence"]),
+        name="javascript-catalog",
+    ),
+    path("markdownx/", include("markdownx.urls")),
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]

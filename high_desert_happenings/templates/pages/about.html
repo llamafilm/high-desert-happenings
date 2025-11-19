@@ -1,3 +1,74 @@
 {% extends "base.html" %}
+{% load static %}
 
+{% block title %}About - High Desert Happenings{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <h1>About High Desert Happenings</h1>
+
+      <div class="mt-4">
+        <h3>Welcome to the High Desert!</h3>
+        <p>
+          High Desert Happenings is your go-to resource for discovering events, activities, and entertainment
+          in the beautiful Mojave Desert. From outdoor adventures to cultural experiences,
+          we help you find things to do, from Morongo to Wonder Valley.
+        </p>
+      </div>
+
+      <div class="mt-4">
+        <h3>What We Offer</h3>
+        <ul class="list-unstyled">
+          <li class="mb-3">
+            <i class="bi bi-calendar-event text-primary"></i>
+            <strong> Comprehensive Event Listings</strong><br>
+            <span class="text-muted">Browse concerts, festivals, art shows, farmers markets, and more</span>
+          </li>
+          <li class="mb-3">
+            <i class="bi bi-geo-alt text-primary"></i>
+            <strong> Local Venues & Locations</strong><br>
+            <span class="text-muted">Discover great spots for events throughout the High Desert</span>
+          </li>
+          <li class="mb-3">
+            <i class="bi bi-funnel text-primary"></i>
+            <strong> Easy Filtering</strong><br>
+            <span class="text-muted">Find exactly what you're looking for by date, tag, or location</span>
+          </li>
+          <li class="mb-3">
+            <i class="bi bi-arrow-repeat text-primary"></i>
+            <strong> Recurring Events</strong><br>
+            <span class="text-muted">Never miss weekly markets, monthly meetups, or annual traditions</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="mt-4">
+        <h3>Our Mission</h3>
+        <p>
+          We believe that a vibrant community is built on shared experiences. High Desert Happenings connects
+          locals and visitors with the incredible events that make our region special. Whether you're looking
+          for family-friendly activities, outdoor adventures, cultural enrichment, or nightlife, we're here to
+          help you discover what's happening in the High Desert.
+        </p>
+      </div>
+
+      <div class="mt-4">
+        <h3>Get Involved</h3>
+        <p>
+          Have an event to share? We're always looking to feature more local happenings. Contact us to learn
+          how you can add your events to our calendar and reach our community of engaged locals and visitors.
+        </p>
+      </div>
+
+      <div class="mt-4 mb-5">
+        <a href="{% url 'event_list' %}" class="btn btn-primary">
+          <i class="bi bi-calendar-event"></i> Browse Events
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
 

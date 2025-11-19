@@ -10,6 +10,7 @@ services:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
     image: ${REGISTRY}/${IMAGE_NAME}-django:main
+    restart: unless-stopped
     depends_on:
       - postgres
       - redis
@@ -25,6 +26,7 @@ services:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
     image: ${REGISTRY}/${IMAGE_NAME}-postgres:main
+    restart: unless-stopped
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
       - production_postgres_data_backups:/backups
@@ -46,6 +48,7 @@ services:
 
   redis:
     image: docker.io/redis:7.2
+    restart: unless-stopped
 
 
   awscli:

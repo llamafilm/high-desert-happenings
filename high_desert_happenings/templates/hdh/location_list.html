@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}Locations - High Desert Happenings{% endblock %}
+{% block content %}
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1>Locations</h1>
+      {% if user.is_authenticated %}
+        <a href="{% url 'location_create' %}" class="btn btn-primary">
+          <i class="bi bi-plus-circle"></i> Add Location
+        </a>
+      {% endif %}
+    </div>
+    <!-- Filter Form -->
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Filter Locations</h5>
+            <form method="get" action="" class="row g-3">
+              <div class="col-md-3">
+                <label for="neighborhood" class="form-label">Neighborhood</label>
+                <select class="form-select" id="neighborhood" name="neighborhood">
+                  <option value="">All Neighborhoods</option>
+                  {% for value, label in neighborhoods %}
+                    {% if value %}
+                      <option value="{{ value }}"
+                              {% if request.GET.neighborhood == value %}selected{% endif %}>{{ label }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label for="dogs_allowed" class="form-label">Dog Friendly</label>
+                <select class="form-select" id="dogs_allowed" name="dogs_allowed">
+                  <option value="">All Locations</option>
+                  <option value="true"
+                          {% if request.GET.dogs_allowed == "true" %}selected{% endif %}>Dog Friendly</option>
+                  <option value="false"
+                          {% if request.GET.dogs_allowed == "false" %}selected{% endif %}>No Dogs</option>
+                </select>
+              </div>
+              <div class="col-md-3 d-flex align-items-end">
+                <a href="{% url 'location_list' %}" class="btn btn-secondary">
+                  <i class="bi bi-x-circle"></i> Clear
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Location Cards -->
+    {% if locations %}
+      <div class="row">
+        {% for location in locations %}
+          <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+              {% if location.image %}
+                <a href="{% url 'location_detail' location.pk %}">
+                  <img src="{{ location.image.url }}"
+                       class="card-img-top"
+                       alt="{{ location.name }}"
+                       style="height: 200px;
+                              object-fit: cover" />
+                </a>
+              {% else %}
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                     style="height: 200px">
+                  <i class="bi bi-geo-alt text-white" style="font-size: 4rem;"></i>
+                </div>
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title">
+                  <a href="{% url 'location_detail' location.pk %}"
+                     class="text-decoration-none">{{ location.name }}</a>
+                </h5>
+                {% if location.neighborhood %}
+                  <p class="card-text">
+                    <span class="badge bg-info">{{ location.get_neighborhood_display }}</span>
+                  </p>
+                {% endif %}
+                {% if location.address or location.city %}
+                  <p class="card-text text-muted small mb-2">
+                    <i class="bi bi-geo-alt"></i>
+                    {% if location.address %}
+                      {{ location.address }}
+                      <br />
+                    {% endif %}
+                    {% if location.city or location.state %}
+                      {{ location.city }}
+                      {% if location.state %}, {{ location.state }}{% endif %}
+                    {% endif %}
+                  </p>
+                {% endif %}
+                {% if location.dogs_allowed == True %}
+                  <span class="badge bg-success" title="Dogs allowed">
+                    <i class="bi bi-heart"></i> Dog Friendly 🐕
+                  </span>
+                {% elif location.dogs_allowed == False %}
+                  <span class="badge bg-danger" title="No dogs allowed">
+                    <i class="bi bi-slash-circle"></i> No Dogs
+                  </span>
+                {% endif %}
+                {% if location.phone_number %}
+                  <p class="card-text small mt-2 mb-1">
+                    <i class="bi bi-telephone"></i> <a href="tel:{{ location.phone_number }}">{{ location.phone_number }}</a>
+                  </p>
+                {% endif %}
+                {% if location.website %}
+                  <p class="card-text small mb-0">
+                    <i class="bi bi-globe"></i> <a href="{{ location.website }}" target="_blank">Website</a>
+                  </p>
+                {% endif %}
+              </div>
+              <div class="card-footer bg-transparent">
+                <a href="{% url 'location_detail' location.pk %}"
+                   class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-info-circle"></i> View Details
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <!-- Pagination -->
+      {% if is_paginated %}
+        <nav aria-label="Page navigation">
+          <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?page=1{% if request.GET.neighborhood %}&neighborhood={{ request.GET.neighborhood }}{% endif %}{% if request.GET.dogs_allowed %}&dogs_allowed={{ request.GET.dogs_allowed }}{% endif %}"
+                   aria-label="First">
+                  <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.previous_page_number }}{% if request.GET.neighborhood %}&neighborhood={{ request.GET.neighborhood }}{% endif %}{% if request.GET.dogs_allowed %}&dogs_allowed={{ request.GET.dogs_allowed }}{% endif %}"
+                   aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link"
+                     href="?page={{ num }}{% if request.GET.neighborhood %}&neighborhood={{ request.GET.neighborhood }}{% endif %}{% if request.GET.dogs_allowed %}&dogs_allowed={{ request.GET.dogs_allowed }}{% endif %}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.next_page_number }}{% if request.GET.neighborhood %}&neighborhood={{ request.GET.neighborhood }}{% endif %}{% if request.GET.dogs_allowed %}&dogs_allowed={{ request.GET.dogs_allowed }}{% endif %}"
+                   aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.neighborhood %}&neighborhood={{ request.GET.neighborhood }}{% endif %}{% if request.GET.dogs_allowed %}&dogs_allowed={{ request.GET.dogs_allowed }}{% endif %}"
+                   aria-label="Last">
+                  <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      {% endif %}
+    {% else %}
+      <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No locations found matching your filters.
+      </div>
+    {% endif %}
+    <div class="mt-4">
+      <a href="{% url 'event_list' %}" class="btn btn-secondary">
+        <i class="bi bi-calendar-event"></i> View Events
+      </a>
+    </div>
+  </div>
+  <script>
+    // Auto-submit the filter form when any filter changes
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('form[method="get"]');
+      const filters = form.querySelectorAll('select');
+
+      filters.forEach(function(filter) {
+        filter.addEventListener('change', function() {
+          // Remove empty input fields before form submission to make cleaner URLs
+          const inputs = form.querySelectorAll('select');
+          inputs.forEach(function(input) {
+            if (!input.value || input.value.trim() === '') {
+              input.removeAttribute('name');
+            }
+          });
+          form.submit();
+        });
+      });
+    });
+  </script>
+{% endblock %}

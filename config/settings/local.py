@@ -13,7 +13,7 @@ SECRET_KEY = env(
     default="UG4MSBVKPIBKt5jHoRhZjyQNBUTuZyltBJtx25yoLq01IyoFydQYEt5M3BefRCV7",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]  # noqa: S104
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # CACHES
 # ------------------------------------------------------------------------------
@@ -55,6 +55,7 @@ if env("USE_DOCKER") == "yes":
 
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
     INTERNAL_IPS += [".".join([*ip.split(".")[:-1], "1"]) for ip in ips]
+    INTERNAL_IPS.append("192.168.65.1")
 
 # django-extensions
 # ------------------------------------------------------------------------------

@@ -1,5 +1,71 @@
 /* These styles are generated from project.scss. */
 
+/* Desert Sand Color Scheme */
+body {
+  background-color: #d4b896;
+}
+
+a {
+  color: #8b6f5c;
+}
+
+a:hover {
+  color: #755e4d;
+}
+
+.card {
+  background-color: #f5e6d3;
+  border-color: #c9a876;
+}
+
+.card-body {
+  background-color: #f5e6d3;
+}
+
+.card-header {
+  background-color: #e8d4b8;
+  border-bottom-color: #c9a876;
+}
+
+.btn-primary {
+  background-color: #a1836c;
+  border-color: #8b6f5c;
+}
+
+.btn-primary:hover {
+  background-color: #8b6f5c;
+  border-color: #755e4d;
+}
+
+.btn-outline-primary {
+  color: #8b6f5c;
+  border-color: #8b6f5c;
+}
+
+.btn-outline-primary:hover {
+  background-color: #8b6f5c;
+  border-color: #8b6f5c;
+  color: #fff;
+}
+
+.btn-secondary {
+  background-color: #c9a876;
+  border-color: #b8976a;
+}
+
+.btn-secondary:hover {
+  background-color: #b8976a;
+  border-color: #a7865e;
+}
+
+.badge.bg-secondary {
+  background-color: #a1836c !important;
+}
+
+.badge.bg-info {
+  background-color: #c9a876 !important;
+}
+
 .alert-debug {
   color: black;
   background-color: white;
@@ -10,4 +76,71 @@
   color: #b94a48;
   background-color: #f2dede;
   border-color: #eed3d7;
+}
+
+/* MarkdownX Tabs */
+.markdownx-tabs {
+  display: flex;
+  border-bottom: 2px solid #c9a876;
+  margin-bottom: 0;
+  background-color: #e8d4b8;
+}
+
+.markdownx-tab {
+  padding: 10px 20px;
+  background-color: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #8b6f5c;
+  transition: all 0.3s ease;
+}
+
+.markdownx-tab:hover {
+  background-color: #f5e6d3;
+  color: #755e4d;
+}
+
+.markdownx-tab-active {
+  color: #755e4d;
+  border-bottom-color: #8b6f5c;
+  background-color: #f5e6d3;
+}
+
+.markdownx-tab-content {
+  background-color: #fff;
+  border: 1px solid #c9a876;
+  border-top: none;
+}
+
+.markdownx-tab-pane {
+  display: none;
+  padding: 15px;
+}
+
+.markdownx-tab-pane-active {
+  display: block;
+}
+
+.markdownx-preview {
+  min-height: 200px;
+  padding: 10px;
+}
+
+.markdownx textarea {
+  width: 100%;
+  min-height: 200px;
+  border: none;
+  outline: none;
+  font-family: monospace;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.inline-field {
+    display: inline-block;
+    width: 200px;
+    margin-right: 2%;
 }

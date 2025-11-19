@@ -78,11 +78,14 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.mfa",
     "allauth.socialaccount",
+    "localflavor",
+    "markdownx",
+    "recurrence",
 ]
 
 LOCAL_APPS = [
     "high_desert_happenings.users",
-    # Your stuff: custom apps go here
+    "high_desert_happenings.hdh.apps.HdhConfig",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -226,7 +229,7 @@ EMAIL_TIMEOUT = 5
 # Django Admin URL.
 ADMIN_URL = "admin/"
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = [("""Elliott Balsley""", "ebalsley@pm.me")]
+ADMINS = [env("DJANGO_ADMINS", default="").split(",")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 # https://cookiecutter-django.readthedocs.io/en/latest/settings.html#other-environment-settings
@@ -243,7 +246,7 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "verbose": {
-            "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s",
+            "format": "%(levelname)s %(asctime)s %(module)s %(message)s",
         },
     },
     "handlers": {
@@ -251,6 +254,13 @@ LOGGING = {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
             "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "high_desert_happenings.hdh": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
         },
     },
     "root": {"level": "INFO", "handlers": ["console"]},
@@ -279,5 +289,6 @@ SOCIALACCOUNT_ADAPTER = "high_desert_happenings.users.adapters.SocialAccountAdap
 SOCIALACCOUNT_FORMS = {"signup": "high_desert_happenings.users.forms.UserSocialSignupForm"}
 
 
-# Your stuff...
-# ------------------------------------------------------------------------------
+MARKDOWNX_UPLOAD_MAX_SIZE = 10_000_000  # 5 MB
+MARKDOWNX_IMAGE_MAX_SIZE = { "size": (500, 500), "quality": 90 }
+MARKDOWNX_SVG_JAVASCRIPT_PROTECTION = False

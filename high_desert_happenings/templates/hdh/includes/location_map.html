@@ -1,0 +1,19 @@
+{% comment %}
+  Reusable map component for displaying a location on a Leaflet map.
+
+  Required context variables:
+  - location: Location object with latitude and longitude
+
+  Usage in parent template:
+  1. Include this in the content block where you want the map
+  2. Add {% include "hdh/includes/location_map_css.html" %} in the {% block css %} section
+  3. Add {% include "hdh/includes/location_map_js.html" %} in the {% block javascript %} section
+  4. Add {% include "hdh/includes/location_map_init.html" %} in the {% block inline_javascript %} section
+{% endcomment %}
+{% if location and location.latitude and location.longitude %}
+  <div class="card mb-3">
+    <div class="card-body p-0">
+      <div id="map" style="height: 300px; width: 100%;"></div>
+    </div>
+  </div>
+{% endif %}

@@ -1,0 +1,14 @@
+<div class="markdownx">
+    <div class="markdownx-tabs">
+        <button type="button" class="markdownx-tab markdownx-tab-active" data-tab="editor">Edit</button>
+        <button type="button" class="markdownx-tab" data-tab="preview">Preview</button>
+    </div>
+    <div class="markdownx-tab-content">
+        <div class="markdownx-tab-pane markdownx-tab-pane-active" data-pane="editor">
+            {% include 'django/forms/widgets/textarea.html' %}
+        </div>
+        <div class="markdownx-tab-pane" data-pane="preview">
+            <div class="markdownx-preview"></div>
+        </div>
+    </div>
+</div>
