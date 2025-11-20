@@ -1,6 +1,7 @@
 import re
 
 from django import template
+from django.utils import timezone
 
 register = template.Library()
 
@@ -38,9 +39,12 @@ def friendly_time(datetime_value):
 
 @register.filter(name="friendly_datetime")
 def friendly_datetime(datetime_value):
-    """Format datetime as 'November 19 at 3pm' or 'November 19 at 3:30pm'."""
+    """Format datetime as 'November 19 at 3pm' or 'November 19 at 3:30pm'.
+    Converts to local timezone before formatting."""
     if not datetime_value:
         return ""
-    date_part = datetime_value.strftime("%B %-d")
-    time_part = friendly_time(datetime_value)
+    # Convert to local timezone
+    local_datetime = timezone.localtime(datetime_value)
+    date_part = local_datetime.strftime("%B %-d")
+    time_part = friendly_time(local_datetime)
     return f"{date_part} at {time_part}"

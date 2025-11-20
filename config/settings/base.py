@@ -1,6 +1,4 @@
-# ruff: noqa: ERA001, E501
 """Base settings to build other settings files upon."""
-
 
 from pathlib import Path
 
@@ -290,5 +288,5 @@ SOCIALACCOUNT_FORMS = {"signup": "high_desert_happenings.users.forms.UserSocialS
 
 
 MARKDOWNX_UPLOAD_MAX_SIZE = 10_000_000  # 5 MB
-MARKDOWNX_IMAGE_MAX_SIZE = { "size": (500, 500), "quality": 90 }
+MARKDOWNX_IMAGE_MAX_SIZE = {"size": (500, 500), "quality": 90}
 MARKDOWNX_SVG_JAVASCRIPT_PROTECTION = False

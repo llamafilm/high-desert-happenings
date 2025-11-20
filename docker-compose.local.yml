@@ -1,7 +1,7 @@
 volumes:
   high_desert_happenings_local_postgres_data: {}
   high_desert_happenings_local_postgres_data_backups: {}
-  
+
 
 services:
   django:

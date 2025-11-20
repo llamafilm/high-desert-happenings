@@ -1,4 +1,4 @@
-<div class="markdownx">
+<div class="markdownx" id="markdownx-{{ attrs.id }}">
     <div class="markdownx-tabs">
         <button type="button" class="markdownx-tab markdownx-tab-active" data-tab="editor">Edit</button>
         <button type="button" class="markdownx-tab" data-tab="preview">Preview</button>
@@ -12,3 +12,52 @@
         </div>
     </div>
 </div>
+<script>
+// switch between edit and preview tabs
+(function() {
+    const container = document.getElementById('markdownx-{{ attrs.id }}');
+    const tabs = container.querySelectorAll('.markdownx-tab');
+    const panes = container.querySelectorAll('.markdownx-tab-pane');
+    const textarea = container.querySelector('textarea');
+    const preview = container.querySelector('.markdownx-preview');
+
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+
+            // Update active tab
+            tabs.forEach(t => t.classList.remove('markdownx-tab-active'));
+            this.classList.add('markdownx-tab-active');
+
+            // Update active pane
+            panes.forEach(p => p.classList.remove('markdownx-tab-pane-active'));
+            const targetPane = container.querySelector('[data-pane="' + tabName + '"]');
+            if (targetPane) {
+                targetPane.classList.add('markdownx-tab-pane-active');
+            }
+
+            // If switching to preview, fetch rendered markdown
+            if (tabName === 'preview' && textarea.value) {
+                preview.innerHTML = '<p class="text-muted">Loading preview...</p>';
+
+                fetch('/markdownx/markdownify/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: 'content=' + encodeURIComponent(textarea.value)
+                })
+                .then(response => response.text())
+                .then(html => {
+                    preview.innerHTML = html;
+                })
+                .catch(error => {
+                    preview.innerHTML = '<p class="text-danger">Error loading preview</p>';
+                    console.error('Preview error:', error);
+                });
+            }
+        });
+    });
+})();
+</script>

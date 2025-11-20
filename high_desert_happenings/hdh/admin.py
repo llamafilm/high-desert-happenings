@@ -49,7 +49,7 @@ class EventAdmin(admin.ModelAdmin):
         "location",
         "start_datetime",
         "created_by",
-        "recurrence_display",
+        "series_display",
     ]
     list_filter = ["start_datetime", "location", "tags", "created_by"]
     search_fields = ["title", "description", "location__name", "created_by__username"]
@@ -66,11 +66,17 @@ class EventAdmin(admin.ModelAdmin):
                     "location",
                     "start_datetime",
                     "end_datetime",
-                    "recurrences",
                     "webpage_url",
                     "is_free",
                     "tags",
                 ),
+            },
+        ),
+        (
+            _("Series Information"),
+            {
+                "fields": ("series_id", "parent_event"),
+                "classes": ("collapse",),
             },
         ),
         (
@@ -83,12 +89,13 @@ class EventAdmin(admin.ModelAdmin):
     )
 
     @admin.display(
-        description="Recurrence",
+        description="Series",
     )
-    def recurrence_display(self, obj):
-        """Display recurrence in human-readable format."""
-        if obj.recurrences and obj.recurrences.rrules:
-            return obj.recurrences.rrules[0].to_text()
+    def series_display(self, obj):
+        """Display whether event is part of a series."""
+        if obj.is_part_of_series():
+            series_events = obj.get_series_events()
+            return f"Part of series ({series_events.count()} events)"
         return "-"
 
     @admin.display(
@@ -103,7 +110,7 @@ class EventAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     def get_readonly_fields(self, request, obj=None):
-        readonly = ["created_at", "updated_at"]
+        readonly = ["created_at", "updated_at", "series_id", "parent_event"]
         if obj:  # Editing an existing object
             readonly.append("created_by")
         return readonly

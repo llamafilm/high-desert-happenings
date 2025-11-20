@@ -1,4 +1,5 @@
 import logging
+import uuid
 from decimal import ROUND_HALF_UP
 from decimal import Decimal
 from pathlib import Path
@@ -11,7 +12,6 @@ from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from localflavor.us.models import USStateField
 from markdownx.models import MarkdownxField
-from recurrence.fields import RecurrenceField
 
 logger = logging.getLogger(__name__)
 
@@ -244,17 +244,32 @@ class Event(models.Model):
         related_name="events",
         verbose_name=_("Tags"),
     )
-    recurrences = RecurrenceField(
-        _("Recurrences"),
-        blank=True,
+
+    # Series tracking for recurring events
+    series_id = models.UUIDField(
+        _("Series ID"),
+        default=uuid.uuid4,
+        editable=False,
+        help_text=_("UUID identifying which events belong to the same recurring series"),
+    )
+    parent_event = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
         null=True,
-        help_text=_("Define recurring event pattern (e.g., daily, weekly, monthly)"),
+        blank=True,
+        related_name="recurrence_instances",
+        verbose_name=_("Parent Event"),
+        help_text=_("If this is a recurring event instance, reference to the parent event"),
     )
 
     class Meta:
         verbose_name = _("Event")
         verbose_name_plural = _("Events")
-        ordering = ["-start_datetime"]
+        ordering = ["start_datetime"]
+        indexes = [
+            models.Index(fields=["series_id"]),
+            models.Index(fields=["start_datetime"]),
+        ]
 
     def __str__(self):
         return self.title
@@ -262,3 +277,29 @@ class Event(models.Model):
     def get_absolute_url(self):
         """Return the URL to view this event."""
         return reverse("event_detail", kwargs={"pk": self.pk})
+
+    def is_part_of_series(self):
+        """Check if this event is part of a recurring series."""
+        return self.parent_event is not None or self.recurrence_instances.exists()
+
+    def get_series_events(self):
+        """Get all events in this series (including self)."""
+        if self.parent_event:
+            # This is a child event, get all siblings including parent
+            return Event.objects.filter(
+                models.Q(pk=self.parent_event.pk) | models.Q(parent_event=self.parent_event),
+            ).order_by("start_datetime")
+        # This is a parent event or standalone, get all children
+        return Event.objects.filter(
+            models.Q(pk=self.pk) | models.Q(parent_event=self),
+        ).order_by("start_datetime")
+
+    def get_future_series_events_including_self(self):
+        """Get all future events in this series starting from and including this event."""
+        series_events = self.get_series_events()
+        return series_events.filter(start_datetime__gte=self.start_datetime)
+
+    def get_future_series_events(self):
+        """Get all future events in this series after this event."""
+        series_events = self.get_series_events()
+        return series_events.filter(start_datetime__gt=self.start_datetime)

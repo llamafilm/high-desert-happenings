@@ -144,3 +144,12 @@ a:hover {
     width: 200px;
     margin-right: 2%;
 }
+
+/* Override recurrence widget link color */
+div.recurrence-widget {
+    background-color: rgb(134, 120, 93) !important ;
+}
+
+a.add-button {
+    color: rgb(33, 37, 41) !important ;
+}

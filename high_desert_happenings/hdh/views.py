@@ -1,18 +1,18 @@
 import logging
+import uuid
 import zoneinfo
 from datetime import datetime
 from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.paginator import EmptyPage
-from django.core.paginator import PageNotAnInteger
-from django.core.paginator import Paginator
-from django.http import Http404
+from django.core.exceptions import ValidationError
 from django.http import HttpResponse
+from django.urls import reverse
 from django.utils import timezone
 from django.views import View
 from django.views.generic import CreateView
+from django.views.generic import DeleteView
 from django.views.generic import DetailView
 from django.views.generic import ListView
 from django.views.generic import UpdateView
@@ -25,7 +25,6 @@ from .models import Location
 from .models import Tag
 from .permissions import CanManageEventMixin
 from .permissions import CanManageLocationMixin
-from .utils import get_occurrence_start
 
 logger = logging.getLogger(__name__)
 
@@ -37,14 +36,11 @@ class EventListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        """Return list of event occurrences based on filters.
-        We can't return a QuerySet because we need to expand recurring events,
-        so we return a list of occurrence dicts instead.
-        This requires overriding the pagination method as well."""
-        queryset = (
-            Event.objects.select_related("location", "created_by")
-            .prefetch_related("tags")
-        )
+        """Return list of events based on filters."""
+        queryset = Event.objects.select_related(
+            "location",
+            "created_by",
+        ).prefetch_related("tags")
 
         # Filter by tag if provided
         tag_slug = self.request.GET.get("tag")
@@ -77,14 +73,14 @@ class EventListView(LoginRequiredMixin, ListView):
 
         if start_date:
             try:
-                start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+                start_dt = datetime.strptime(start_date, "%Y-%m-%d")  # noqa: DTZ007
                 start_dt = timezone.make_aware(start_dt)
             except ValueError:
                 pass
 
         if end_date:
             try:
-                end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+                end_dt = datetime.strptime(end_date, "%Y-%m-%d")  # noqa: DTZ007
                 end_dt = end_dt.replace(hour=23, minute=59, second=59)
                 end_dt = timezone.make_aware(end_dt)
             except ValueError:
@@ -96,83 +92,13 @@ class EventListView(LoginRequiredMixin, ListView):
         if not end_dt:
             end_dt = start_dt + timedelta(days=90)
 
-        # Filter events that either:
-        # 1. Start within the date range, OR
-        # 2. Have recurrences (we'll expand these later)
+        # Filter events within the date range
         queryset = queryset.filter(
             start_datetime__gte=start_dt,
             start_datetime__lte=end_dt,
         )
 
-        # Get all events and expand recurring ones
-        events = list(queryset.distinct())
-        event_occurrences = []
-
-        for event in events:
-            # Check if event has recurrences
-            if event.recurrences:
-                # Generate occurrences within the date range
-                occurrences = event.recurrences.between(
-                    start_dt,
-                    end_dt,
-                    inc=True,
-                    dtstart=event.start_datetime,
-                )
-
-                # Calculate event duration for end_datetime
-                duration = None
-                if event.end_datetime:
-                    duration = event.end_datetime - event.start_datetime
-
-                # Create an occurrence object for each recurrence
-                for occ_dt in occurrences:
-                    # Make occ_dt timezone-aware if needed
-                    if timezone.is_naive(occ_dt):
-                        aware_dt = timezone.make_aware(occ_dt)
-                    else:
-                        aware_dt = occ_dt
-
-                    # Create a copy of the event with updated datetime
-                    occurrence = {
-                        "event": event,
-                        "start_datetime": aware_dt,
-                        "end_datetime": aware_dt + duration if duration else None,
-                        "is_occurrence": True,
-                    }
-                    event_occurrences.append(occurrence)
-            else:
-                # Non-recurring events have a single occurrence
-                occurrence = {
-                    "event": event,
-                    "start_datetime": event.start_datetime,
-                    "end_datetime": event.end_datetime,
-                    "is_occurrence": False,
-                }
-                event_occurrences.append(occurrence)
-
-        # Sort all occurrences by start_datetime
-        event_occurrences.sort(key=lambda x: x["start_datetime"])
-
-        return event_occurrences
-
-    def paginate_queryset(self, queryset, page_size):
-        """Override pagination to handle list instead of QuerySet."""
-        paginator = Paginator(queryset, page_size)
-        page = self.request.GET.get("page", 1)
-
-        try:
-            occurrences = paginator.page(page)
-        except PageNotAnInteger:
-            occurrences = paginator.page(1)
-        except EmptyPage:
-            occurrences = paginator.page(paginator.num_pages)
-
-        return (
-            paginator,
-            occurrences,
-            occurrences.object_list,
-            occurrences.has_other_pages(),
-        )
+        return queryset.distinct().order_by("start_datetime")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -184,14 +110,16 @@ class EventListView(LoginRequiredMixin, ListView):
         day_buttons = []
         for i in range(7):
             day = today + timedelta(days=i)
-            day_buttons.append({
-                "date": day,
-                "display": day.strftime("%a %d") if i > 0 else "Today",
-                "is_selected": (
-                    self.request.GET.get("start_date") == day.isoformat()
-                    and self.request.GET.get("end_date") == day.isoformat()
-                ),
-            })
+            day_buttons.append(
+                {
+                    "date": day,
+                    "display": day.strftime("%a %d") if i > 0 else "Today",
+                    "is_selected": (
+                        self.request.GET.get("start_date") == day.isoformat()
+                        and self.request.GET.get("end_date") == day.isoformat()
+                    ),
+                },
+            )
         context["day_buttons"] = day_buttons
 
         return context
@@ -203,74 +131,24 @@ class EventDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "event"
 
     def get_queryset(self):
-        return Event.objects.select_related("location", "created_by").prefetch_related("tags")
+        return Event.objects.select_related("location", "created_by").prefetch_related(
+            "tags",
+        )
 
     def get_context_data(self, **kwargs):
-        """Add occurrence date if provided in URL."""
+        """Add series information if this event is part of a recurring series."""
         context = super().get_context_data(**kwargs)
 
-        # Check if an occurrence date was provided
-        occurrence_date = self.request.GET.get("occurrence")
-        if occurrence_date and self.object.recurrences:
-            try:
-                # Parse the occurrence date
-                occ_dt = datetime.strptime(occurrence_date, "%Y-%m-%d")
-
-                # Get the original event's datetime in its timezone
-                original_start = self.object.start_datetime
-
-                # Create the occurrence datetime by replacing the date part
-                # while preserving the time and timezone
-                occ_datetime = original_start.replace(
-                    year=occ_dt.year,
-                    month=occ_dt.month,
-                    day=occ_dt.day,
-                )
-
-                # Validate that this date is actually an occurrence
-                # Check within a reasonable range (10 years from original event)
-                validation_end = self.object.start_datetime + timedelta(days=3650)
-                occurrences = self.object.recurrences.between(
-                    self.object.start_datetime,
-                    validation_end,
-                    inc=True,
-                    dtstart=self.object.start_datetime,
-                )
-
-                # Check if the requested date matches any occurrence
-                is_valid_occurrence = False
-                for occ in occurrences:
-                    # Make timezone-aware if needed
-                    if timezone.is_naive(occ):
-                        aware_occ = timezone.make_aware(occ)
-                    else:
-                        aware_occ = occ
-                    # Compare dates (ignore time differences)
-                    if aware_occ.date() == occ_datetime.date():
-                        is_valid_occurrence = True
-                        break
-
-                if is_valid_occurrence:
-                    # Calculate end datetime if event has duration
-                    occ_end_datetime = None
-                    if self.object.end_datetime:
-                        duration = self.object.end_datetime - self.object.start_datetime
-                        occ_end_datetime = occ_datetime + duration
-
-                    # Override the displayed dates with occurrence dates
-                    context["occurrence_start_datetime"] = occ_datetime
-                    context["occurrence_end_datetime"] = occ_end_datetime
-                    context["is_occurrence_view"] = True
-                else:
-                    # Invalid occurrence date - return 404
-                    msg = "This date is not a valid occurrence of this event."
-                    raise Http404(msg)
-            except (ValueError, AttributeError):
-                pass
+        # Add series information
+        if self.object.is_part_of_series():
+            context["is_part_of_series"] = True
+            context["series_events"] = self.object.get_series_events()
 
         # Render styled_description markdown to HTML
         if self.object.styled_description:
-            context["styled_description_html"] = markdownify(self.object.styled_description)
+            context["styled_description_html"] = markdownify(
+                self.object.styled_description,
+            )
 
         return context
 
@@ -312,9 +190,7 @@ class LocationDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["events"] = (
-            self.object.events.select_related("created_by")
-            .prefetch_related("tags")
-            .order_by("start_datetime")
+            self.object.events.select_related("created_by").prefetch_related("tags").order_by("start_datetime")
         )
         return context
 
@@ -359,32 +235,18 @@ class EventExportView(LoginRequiredMixin, View):
     """Export an event as an ICS calendar file."""
 
     def format_dt(self, dt: datetime, include_tz=True) -> str:
-            """Format datetime for ICS in local timezone"""
-            tz_name = settings.TIME_ZONE
-            tz = zoneinfo.ZoneInfo(tz_name)
-            local_dt = dt.astimezone(tz)
-            return f"TZID={tz_name}:{local_dt.strftime('%Y%m%dT%H%M%S')}"
+        """Format datetime for ICS in local timezone"""
+        tz_name = settings.TIME_ZONE
+        tz = zoneinfo.ZoneInfo(tz_name)
+        local_dt = dt.astimezone(tz)
+        return f"TZID={tz_name}:{local_dt.strftime('%Y%m%dT%H%M%S')}"
 
     def get(self, request, pk):
         event = Event.objects.select_related("location").get(pk=pk)
 
-        # Check if exporting a specific occurrence
-        occurrence_date = request.GET.get("date")
-        if occurrence_date and event.recurrences:
-            try:
-                start_dt = get_occurrence_start(event, occurrence_date)
-            except ValueError:
-                return Http404("%s is not a valid date for recurring event '%e': '%s'", occurrence_date, event.name)
-
-            end_dt = None
-            if event.end_datetime:
-                duration = event.end_datetime - event.start_datetime
-                end_dt = start_dt + duration
-
-        else:
-            start_dt = event.start_datetime
-            end_dt = event.end_datetime
-
+        # Use the event's start and end datetime
+        start_dt = event.start_datetime
+        end_dt = event.end_datetime
 
         # Build ICS content
         ics_lines = [
@@ -414,28 +276,27 @@ class EventExportView(LoginRequiredMixin, View):
 
             # Add geographic coordinates if available
             if event.location.latitude and event.location.longitude:
-                ics_lines.append(f"GEO:{event.location.latitude};{event.location.longitude}")
+                ics_lines.append(
+                    f"GEO:{event.location.latitude};{event.location.longitude}",
+                )
                 # Add map link for Apple devices
                 apple_location = (
-                    f'X-APPLE-STRUCTURED-LOCATION;VALUE=URI;'
+                    f"X-APPLE-STRUCTURED-LOCATION;VALUE=URI;"
                     f'X-ADDRESS="{location_str.replace("\\n", " ").replace("\\,", ",")}";'
-                    f'X-TITLE={event.location.name}:'
-                    f'geo:{event.location.latitude},{event.location.longitude}'
+                    f"X-TITLE={event.location.name}:"
+                    f"geo:{event.location.latitude},{event.location.longitude}"
                 )
                 ics_lines.append(apple_location)
 
         if event.webpage_url:
             ics_lines.append(f"URL:{event.webpage_url}")
 
-        # Add recurrence rule if this is a recurring event
-        if event.recurrences and event.recurrences.rrules:
-            rrule = event.recurrences.rrules[0].to_dateutil_rrule()
-            ics_lines.append(str(rrule).split("\n")[1])
-
-        ics_lines.extend([
-            "END:VEVENT",
-            "END:VCALENDAR",
-        ])
+        ics_lines.extend(
+            [
+                "END:VEVENT",
+                "END:VCALENDAR",
+            ],
+        )
 
         # Join with CRLF as per ICS spec
         ics_content = "\r\n".join(ics_lines)
@@ -459,9 +320,85 @@ class EventCreateView(LoginRequiredMixin, CanManageEventMixin, CreateView):
         """Redirect to event detail page after successful creation."""
         return self.object.get_absolute_url()
 
+    def _generate_recurrence_dates(self, recurrence, start_date, max_occurrences=100):
+        """Generate list of dates from recurrence rule."""
+        if not recurrence:
+            return [start_date]
+
+        # Calculate reasonable end date for between() if none specified
+        end_date = start_date + timedelta(days=365 * 3)  # 3 years max
+
+        try:
+            occurrences = recurrence.between(
+                start_date,
+                end_date,
+                inc=True,
+                dtstart=start_date,
+            )
+            # Limit to prevent abuse
+            return list(occurrences)[:max_occurrences]
+        except Exception as e:
+            msg = f"Error generating recurrence dates: {e}"
+            raise ValidationError(msg) from e
+
     def form_valid(self, form):
-        """Set the created_by field to the current user."""
+        """Set the created_by field to the current user and create recurring events if needed."""
         form.instance.created_by = self.request.user
+
+        # Check if recurrence was specified
+        recurrence = form.cleaned_data.get("recurrence_pattern")
+
+        if recurrence:
+            # Generate unique series_id for all events in this series
+            series_id = uuid.uuid4()
+
+            # Get occurrence dates
+            try:
+                occurrence_dates = self._generate_recurrence_dates(
+                    recurrence,
+                    form.cleaned_data["start_datetime"],
+                )
+            except (ValueError, AttributeError) as e:
+                form.add_error("recurrence_pattern", f"Error creating recurrence: {e}")
+                return self.form_invalid(form)
+
+            # Calculate duration
+            duration = None
+            if form.cleaned_data.get("end_datetime"):
+                duration = form.cleaned_data["end_datetime"] - form.cleaned_data["start_datetime"]
+
+            # Create first event (parent)
+            form.instance.series_id = series_id
+            parent_event = form.save()
+
+            # Store for get_success_url
+            self.object = parent_event
+
+            # Create child events for remaining occurrences
+            tags = list(form.cleaned_data.get("tags", []))
+
+            for occurrence_dt in occurrence_dates[1:]:  # Skip first as it's the parent
+                child_event = Event(
+                    title=parent_event.title,
+                    description=parent_event.description,
+                    styled_description=parent_event.styled_description,
+                    image=parent_event.image,
+                    location=parent_event.location,
+                    start_datetime=occurrence_dt,
+                    end_datetime=occurrence_dt + duration if duration else None,
+                    webpage_url=parent_event.webpage_url,
+                    is_free=parent_event.is_free,
+                    age_restriction=parent_event.age_restriction,
+                    created_by=self.request.user,
+                    series_id=series_id,
+                    parent_event=parent_event,
+                )
+                child_event.save()
+                child_event.tags.set(tags)
+
+            return super().form_valid(form)
+
+        # No recurrence - just save normally
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -486,4 +423,109 @@ class EventUpdateView(LoginRequiredMixin, CanManageEventMixin, UpdateView):
         """Add additional context for the template."""
         context = super().get_context_data(**kwargs)
         context["is_edit"] = True
+        context["is_part_of_series"] = self.object.is_part_of_series()
+
+        # If editing a series event, show update scope options
+        if context["is_part_of_series"]:
+            context["show_update_scope"] = True
+            context["update_scope"] = self.request.POST.get("update_scope", "single")
+
         return context
+
+    def form_valid(self, form):
+        """Handle updating single event or entire series."""
+        update_scope = self.request.POST.get("update_scope", "single")
+
+        # If not part of series or updating only this event, use default behavior
+        if update_scope == "single" or not self.object.is_part_of_series():
+            return super().form_valid(form)
+
+        # Update all future events in the series
+        if update_scope == "future":
+            events_to_update = self.object.get_future_series_events_including_self()
+        # Update all events in the series
+        elif update_scope == "all":
+            events_to_update = self.object.get_series_events()
+        else:
+            return super().form_valid(form)
+
+        # Get the fields that changed
+        tags = list(form.cleaned_data.get("tags", []))
+        updated_fields = {
+            "title": form.cleaned_data.get("title"),
+            "description": form.cleaned_data.get("description"),
+            "styled_description": form.cleaned_data.get("styled_description"),
+            "image": form.cleaned_data.get("image"),
+            "location": form.cleaned_data.get("location"),
+            "webpage_url": form.cleaned_data.get("webpage_url"),
+            "is_free": form.cleaned_data.get("is_free"),
+            "age_restriction": form.cleaned_data.get("age_restriction"),
+        }
+
+        # Update all events in scope (preserve individual start/end times)
+        for event in events_to_update:
+            for field, value in updated_fields.items():
+                setattr(event, field, value)
+            event.save()
+            event.tags.set(tags)
+
+        # Refresh the current object
+        self.object.refresh_from_db()
+        return super().form_valid(form)
+
+
+class EventDeleteView(LoginRequiredMixin, CanManageEventMixin, DeleteView):
+    """View for deleting an event."""
+
+    model = Event
+    template_name = "hdh/event_confirm_delete.html"
+
+    def get_success_url(self):
+        """Redirect to event list after successful deletion."""
+        return reverse("event_list")
+
+    def get_context_data(self, **kwargs):
+        """Add additional context for the template."""
+        context = super().get_context_data(**kwargs)
+        context["is_part_of_series"] = self.object.is_part_of_series()
+
+        # If deleting a series event, show delete scope options
+        if context["is_part_of_series"]:
+            context["show_delete_scope"] = True
+            context["delete_scope"] = self.request.POST.get("delete_scope", "single")
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """Handle deleting single event or entire series."""
+        self.object = self.get_object()
+        delete_scope = request.POST.get("delete_scope", "single")
+
+        # If not part of series or deleting only this event, use default behavior
+        if delete_scope == "single" or not self.object.is_part_of_series():
+            return super().post(request, *args, **kwargs)
+
+        # Delete all future events in the series
+        if delete_scope == "future":
+            events_to_delete = self.object.get_future_series_events_including_self()
+        # Delete all events in the series
+        elif delete_scope == "all":
+            events_to_delete = self.object.get_series_events()
+        else:
+            return super().post(request, *args, **kwargs)
+
+        # Delete all events in scope
+        events_to_delete.delete()
+
+        return self.form_valid(None)
+
+
+class LocationDeleteView(LoginRequiredMixin, CanManageLocationMixin, DeleteView):
+    """View for deleting a location."""
+
+    model = Location
+    template_name = "hdh/location_confirm_delete.html"
+
+    def get_success_url(self):
+        """Redirect to location list after successful deletion."""
+        return reverse("location_list")

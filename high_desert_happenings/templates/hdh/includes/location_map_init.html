@@ -6,15 +6,7 @@
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       // Initialize the map
-      var map = L.map('map').setView([{
-        {
-          location.latitude
-        }
-      }, {
-        {
-          location.longitude
-        }
-      }], 10);
+      var map = L.map('map').setView([{{ location.latitude }}, {{ location.longitude }}], 10);
 
       // Add OpenStreetMap tile layer
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -23,15 +15,7 @@
       }).addTo(map);
 
       // Add marker for the location
-      var marker = L.marker([{
-        {
-          location.latitude
-        }
-      }, {
-        {
-          location.longitude
-        }
-      }]).addTo(map);
+      var marker = L.marker([{{ location.latitude }}, {{ location.longitude }}]).addTo(map);
 
       // Add popup with location name
       marker.bindPopup('<b>{{ location.name|escapejs }}</b>{% if location.address %}<br />{{ location.address|escapejs }}{% endif %}');
