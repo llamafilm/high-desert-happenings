@@ -181,7 +181,9 @@
                   aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>Are you sure you want to delete "<strong>{{ event.title }}</strong>"?</p>
+          <p>
+            Are you sure you want to delete "<strong>{{ event.title }}</strong>"?
+          </p>
           {% if is_part_of_series %}
             <div class="alert alert-warning">
               <p class="mb-2">
@@ -194,7 +196,7 @@
                        name="delete_scope"
                        id="delete_single"
                        value="single"
-                       checked>
+                       checked />
                 <label class="form-check-label" for="delete_single">Only this event</label>
               </div>
               <div class="form-check">
@@ -202,7 +204,7 @@
                        type="radio"
                        name="delete_scope"
                        id="delete_future"
-                       value="future">
+                       value="future" />
                 <label class="form-check-label" for="delete_future">This and all future events in the series</label>
               </div>
               <div class="form-check">
@@ -210,7 +212,7 @@
                        type="radio"
                        name="delete_scope"
                        id="delete_all"
-                       value="all">
+                       value="all" />
                 <label class="form-check-label" for="delete_all">All events in the series</label>
               </div>
             </div>
@@ -221,9 +223,14 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <form method="post" action="{% url 'event_delete' event.pk %}" style="display: inline;">
+          <form method="post"
+                action="{% url 'event_delete' event.pk %}"
+                style="display: inline">
             {% csrf_token %}
-            <input type="hidden" name="delete_scope" id="delete_scope_input" value="single">
+            <input type="hidden"
+                   name="delete_scope"
+                   id="delete_scope_input"
+                   value="single" />
             <button type="submit" class="btn btn-danger">Delete</button>
           </form>
         </div>
