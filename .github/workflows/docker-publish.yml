@@ -97,13 +97,14 @@ jobs:
         if: matrix.service == 'django'
         run: |
           docker run --rm \
+            --entrypoint python \
             -e DATABASE_URL=sqlite:///db.sqlite3 \
             -e DJANGO_SECRET_KEY=test-secret-key \
             -e DJANGO_SETTINGS_MODULE=config.settings.test \
             ${{ steps.meta.outputs.tags }} \
-            python manage.py test
+            manage.py test --noinput
 
-      # Push all images after tests pass (just push the already-built images)
+      # Push all images after tests pass
       - name: Push ${{ matrix.service }} image
         if: github.event_name != 'pull_request'
         run: docker push ${{ steps.meta.outputs.tags }}
