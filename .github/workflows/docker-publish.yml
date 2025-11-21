@@ -102,7 +102,7 @@ jobs:
             -e DJANGO_SECRET_KEY=test-secret-key \
             -e DJANGO_SETTINGS_MODULE=config.settings.test \
             ${{ steps.meta.outputs.tags }} \
-            manage.py test --noinput
+            manage.py test high_desert_happenings.hdh --noinput
 
       # Push all images after tests pass
       - name: Push ${{ matrix.service }} image
