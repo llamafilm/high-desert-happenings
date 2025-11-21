@@ -1,7 +1,6 @@
 import logging
 import uuid
-from decimal import ROUND_HALF_UP
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
 import requests
@@ -54,7 +53,7 @@ class Tag(models.Model):
 class Location(models.Model):
     """Model for event locations."""
 
-    name = models.CharField(_("Name"), max_length=200)
+    name = models.CharField(_("Name"), max_length=100)
     address = models.CharField(_("Street Address"), max_length=200, blank=True)
     city = models.CharField(_("City"), max_length=100, blank=True)
     state = USStateField(_("State"), blank=True)
@@ -105,6 +104,14 @@ class Location(models.Model):
         null=True,
         blank=True,
         help_text=_("Check if dogs are allowed at this location"),
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="owned_locations",
+        verbose_name=_("Owner"),
     )
 
     class Meta:
@@ -190,9 +197,8 @@ class Location(models.Model):
 class Event(models.Model):
     """Model for events."""
 
-    title = models.CharField(_("Title"), max_length=200)
-    description = models.TextField(_("Description"), blank=True)
-    styled_description = MarkdownxField(_("Styled Description"), blank=True)
+    name = models.CharField(_("Name"), max_length=100)
+    description = MarkdownxField(_("Description"), blank=True)
     image = models.ImageField(
         _("Image"),
         upload_to="events/images/%Y/%m/",
@@ -272,7 +278,7 @@ class Event(models.Model):
         ]
 
     def __str__(self):
-        return self.title
+        return self.name
 
     def get_absolute_url(self):
         """Return the URL to view this event."""

@@ -37,12 +37,24 @@ class CanManageLocationMixin(UserPassesTestMixin):
     """
     Mixin to check if user can manage (create/edit/delete) locations.
 
-    Only staff and superusers can manage locations.
+    Staff and superusers can manage any location.
+    Location owners can edit/delete their own locations.
+    All authenticated users can create new locations.
     """
 
     def test_func(self):
-        if not self.request.user.is_authenticated:
+        user = self.request.user
+        if not user.is_authenticated:
             return False
 
-        user = self.request.user
-        return user.is_staff or user.is_superuser
+        # Staff and superusers can manage any location
+        if user.is_staff or user.is_superuser:
+            return True
+
+        # Create
+        if self.kwargs.get("pk") is None:
+            return True
+
+        # Edit/delete
+        location = self.get_object()
+        return location.owner == user

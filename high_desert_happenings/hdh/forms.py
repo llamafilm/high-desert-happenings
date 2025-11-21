@@ -3,14 +3,13 @@ from markdownx.fields import MarkdownxFormField
 from markdownx.widgets import MarkdownxWidget
 from recurrence.forms import RecurrenceField
 
-from .models import Event
-from .models import Location
+from .models import Event, Location
 
 
 class EventForm(forms.ModelForm):
     """Form for creating and editing events."""
 
-    styled_description = MarkdownxFormField(
+    description = MarkdownxFormField(
         required=False,
         widget=MarkdownxWidget(attrs={"rows": 10, "cols": 80}),
     )
@@ -25,9 +24,8 @@ class EventForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = [
-            "title",
+            "name",
             "description",
-            "styled_description",
             "image",
             "location",
             "start_datetime",
@@ -47,12 +45,11 @@ class EventForm(forms.ModelForm):
                 attrs={"type": "datetime-local"},
                 format="%Y-%m-%dT%H:%M",
             ),
-            "description": forms.Textarea(attrs={"cols": 40, "rows": 10}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["styled_description"].help_text = "Markdown syntax is supported"
+        self.fields["description"].help_text = "Markdown syntax is supported"
         # Set input formats to exclude seconds
         self.fields["start_datetime"].input_formats = ["%Y-%m-%dT%H:%M"]
         self.fields["end_datetime"].input_formats = ["%Y-%m-%dT%H:%M"]
@@ -78,6 +75,7 @@ class LocationForm(forms.ModelForm):
             "website",
             "image",
             "dogs_allowed",
+            "owner",
             "latitude",
             "longitude",
         ]

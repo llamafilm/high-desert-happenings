@@ -106,7 +106,7 @@
                   {{ event.start_datetime|date:"F j, Y g:i A" }}
                   {% if event.end_datetime %}- {{ event.end_datetime|date:"g:i A" }}{% endif %}
                 </p>
-                {% if event.description %}<p class="card-text">{{ event.description }}</p>{% endif %}
+                {% if event.description %}<p class="card-text">{{ event.description|linebreaksbr|truncatewords:20 }}</p>{% endif %}
                 {% if event.tags.all %}
                   <div class="mb-2">
                     {% for tag in event.tags.all %}
@@ -176,15 +176,4 @@
       </div>
     </div>
   </div>
-{% endblock %}
-{% block css %}
-  {{ block.super }}
-  {% include "hdh/includes/location_map_css.html" %}
-{% endblock %}
-{% block javascript %}
-  {{ block.super }}
-  {% include "hdh/includes/location_map_js.html" %}
-{% endblock %}
-{% block inline_javascript %}
-  {% include "hdh/includes/location_map_init.html" %}
 {% endblock %}

@@ -1,9 +1,7 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
-from .models import Event
-from .models import Location
-from .models import Tag
+from .models import Event, Location, Tag
 
 
 @admin.register(Location)
@@ -27,6 +25,7 @@ class LocationAdmin(admin.ModelAdmin):
                     "website",
                     "dogs_allowed",
                     "image",
+                    "owner",
                 ),
             },
         ),
@@ -45,14 +44,14 @@ class LocationAdmin(admin.ModelAdmin):
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
     list_display = [
-        "title",
+        "name",
         "location",
         "start_datetime",
         "created_by",
         "series_display",
     ]
     list_filter = ["start_datetime", "location", "tags", "created_by"]
-    search_fields = ["title", "description", "location__name", "created_by__username"]
+    search_fields = ["name", "description", "location__name", "created_by__username"]
     date_hierarchy = "start_datetime"
     fieldsets = (
         (
@@ -61,7 +60,6 @@ class EventAdmin(admin.ModelAdmin):
                 "fields": (
                     "title",
                     "description",
-                    "styled_description",
                     "image",
                     "location",
                     "start_datetime",

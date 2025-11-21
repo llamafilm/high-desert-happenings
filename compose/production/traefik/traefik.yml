@@ -1,42 +1,27 @@
+# This runs HTTPS reverse proxy on localhost with self-signed certifiate
 log:
   level: INFO
 
 entryPoints:
   web:
-    # http
     address: ':80'
     http:
-      # https://doc.traefik.io/traefik/routing/entrypoints/#entrypoint
       redirections:
         entryPoint:
           to: web-secure
-
   web-secure:
-    # https
     address: ':443'
-
-certificatesResolvers:
-  letsencrypt:
-    # https://doc.traefik.io/traefik/https/acme/#lets-encrypt
-    acme:
-      email: 'ebalsley@pm.me'
-      storage: /etc/traefik/acme/acme.json
-      # https://doc.traefik.io/traefik/https/acme/#httpchallenge
-      httpChallenge:
-        entryPoint: web
 
 http:
   routers:
     web-secure-router:
-      rule: 'Host(`events.llamafilm.com`)'
+      rule: 'Host(`localhost`)'
       entryPoints:
         - web-secure
       middlewares:
         - csrf
       service: django
-      tls:
-        # https://doc.traefik.io/traefik/routing/routers/#certresolver
-        certResolver: letsencrypt
+      tls: {}
 
   middlewares:
     csrf:

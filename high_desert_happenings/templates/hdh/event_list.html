@@ -36,18 +36,18 @@
                 <label for="neighborhood" class="form-label">Neighborhood</label>
                 <select class="form-select" id="neighborhood" name="neighborhood">
                   <option value="">---</option>
-                                                                                          {% for value, label in neighborhoods %}
-                                                                                            <option value="{{ value }}"
-                                                                                                    {% if request.GET.neighborhood == value %}selected{% endif %}>
-                                                                                              {{ label }}
-                                                                                    </option>
-                                                                                  {% endfor %}
-                                                                        </select>
-                                                              </div>
-                                                            <div class="col-md-2">
-                                                              <label for="tag" class="form-label">Tag</label>
-                                                      <select class="form-select" id="tag" name="tag">
-                                                        <option value="">---</option>
+                                                                        {% for value, label in neighborhoods %}
+                                                                        <option value="{{ value }}"
+                                                                                {% if request.GET.neighborhood == value %}selected{% endif %}>
+                                                                          {{ label }}
+                                                                  </option>
+                                                                  {% endfor %}
+                                                          </select>
+                                                  </div>
+                                                  <div class="col-md-2">
+                                                    <label for="tag" class="form-label">Tag</label>
+                                              <select class="form-select" id="tag" name="tag">
+                                                <option value="">---</option>
         {% for tag in tags %}
           <option value="{{ tag.slug }}"
                   {% if request.GET.tag == tag.slug %}selected{% endif %}>{{ tag.name }}</option>
@@ -123,12 +123,12 @@
                   <div class="col-md-9">
                     <div class="card-body">
                       <h5 class="card-title">
-                        <a href="{% url 'event_detail' event.pk %}" class="text-decoration-none">{{ event.title }}</a>
+                        <a href="{% url 'event_detail' event.pk %}" class="text-decoration-none">{{ event.name }}</a>
                       </h5>
                     {% else %}
                       <div class="card-body">
                         <h5 class="card-title">
-                          <a href="{% url 'event_detail' event.pk %}" class="text-decoration-none">{{ event.title }}</a>
+                          <a href="{% url 'event_detail' event.pk %}" class="text-decoration-none">{{ event.name }}</a>
                         </h5>
                       {% endif %}
                       <p class="card-text">
@@ -148,7 +148,7 @@
                           {% if event.location.city %}- {{ event.location.city }}{% endif %}
                         </p>
                       {% endif %}
-                      {% if event.description %}<p class="card-text">{{ event.description|truncatewords:10 }}</p>{% endif %}
+                      {% if event.description %}<p class="card-text">{{ event.description|linebreaksbr|truncatewords:20 }}</p>{% endif %}
                       <!-- Badges and Tags -->
                       <div class="mb-2">
                         {% if event.is_free %}<span class="badge bg-success me-1">FREE</span>{% endif %}

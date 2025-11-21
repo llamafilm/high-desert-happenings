@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}{{ event.title }} - High Desert Happenings{% endblock %}
+{% block title %}{{ event.name }} - High Desert Happenings{% endblock %}
 {% block content %}
   <div class="container mt-4">
     <div class="row">
@@ -44,9 +44,9 @@
                       max-width: 500px;
                       object-fit: cover" />
         {% endif %}
-        {% if styled_description_html %}
+        {% if description_html %}
           <div class="mb-4">
-            <div>{{ styled_description_html|safe }}</div>
+            <div>{{ description_html|safe }}</div>
           </div>
         {% elif event.description %}
           <div class="mb-4">
@@ -238,22 +238,8 @@
     </div>
   </div>
 {% endblock %}
-{% block css %}
-  {{ block.super }}
-  {% with location=event.location %}
-    {% include "hdh/includes/location_map_css.html" %}
-  {% endwith %}
-{% endblock %}
-{% block javascript %}
-  {{ block.super }}
-  {% with location=event.location %}
-    {% include "hdh/includes/location_map_js.html" %}
-  {% endwith %}
-{% endblock %}
+{% block javascript %}{{ block.super }}{% endblock %}
 {% block inline_javascript %}
-  {% with location=event.location %}
-    {% include "hdh/includes/location_map_init.html" %}
-  {% endwith %}
   <script>
     // Update hidden input when delete scope radio buttons change
     document.addEventListener('DOMContentLoaded', function() {

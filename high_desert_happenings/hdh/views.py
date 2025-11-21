@@ -1,8 +1,7 @@
 import logging
 import uuid
 import zoneinfo
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,20 +10,14 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.views import View
-from django.views.generic import CreateView
-from django.views.generic import DeleteView
-from django.views.generic import DetailView
-from django.views.generic import ListView
-from django.views.generic import UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from markdownx.utils import markdownify
 
-from .forms import EventForm
-from .forms import LocationForm
-from .models import Event
-from .models import Location
-from .models import Tag
-from .permissions import CanManageEventMixin
-from .permissions import CanManageLocationMixin
+from high_desert_happenings.hdh import utils
+
+from .forms import EventForm, LocationForm
+from .models import Event, Location, Tag
+from .permissions import CanManageEventMixin, CanManageLocationMixin
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +115,11 @@ class EventListView(LoginRequiredMixin, ListView):
             )
         context["day_buttons"] = day_buttons
 
+        # Remove markdown formatting from event description
+        for event in context["events"]:
+            if event.description:
+                event.description = utils.markdown_to_text(event.description)
+
         return context
 
 
@@ -144,11 +142,9 @@ class EventDetailView(LoginRequiredMixin, DetailView):
             context["is_part_of_series"] = True
             context["series_events"] = self.object.get_series_events()
 
-        # Render styled_description markdown to HTML
-        if self.object.styled_description:
-            context["styled_description_html"] = markdownify(
-                self.object.styled_description,
-            )
+        # Render description markdown to HTML
+        if self.object.description:
+            context["description_html"] = markdownify(self.object.description)
 
         return context
 
@@ -189,9 +185,14 @@ class LocationDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["events"] = (
-            self.object.events.select_related("created_by").prefetch_related("tags").order_by("start_datetime")
-        )
+        events = self.object.events.select_related("created_by").prefetch_related("tags").order_by("start_datetime")
+
+        # Remove markdown formatting from event descriptions
+        for event in events:
+            if event.description:
+                event.description = utils.markdown_to_text(event.description)
+
+        context["events"] = events
         return context
 
 
@@ -202,15 +203,14 @@ class LocationCreateView(LoginRequiredMixin, CanManageLocationMixin, CreateView)
     form_class = LocationForm
     template_name = "hdh/location_form.html"
 
+    def form_valid(self, form):
+        """Set the owner field to the current user."""
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
     def get_success_url(self):
         """Redirect to location detail page after successful creation."""
         return self.object.get_absolute_url()
-
-    def get_context_data(self, **kwargs):
-        """Add additional context for the template."""
-        context = super().get_context_data(**kwargs)
-        context["is_edit"] = False
-        return context
 
 
 class LocationUpdateView(LoginRequiredMixin, CanManageLocationMixin, UpdateView):
@@ -223,12 +223,6 @@ class LocationUpdateView(LoginRequiredMixin, CanManageLocationMixin, UpdateView)
     def get_success_url(self):
         """Redirect to location detail page after successful update."""
         return self.object.get_absolute_url()
-
-    def get_context_data(self, **kwargs):
-        """Add additional context for the template."""
-        context = super().get_context_data(**kwargs)
-        context["is_edit"] = True
-        return context
 
 
 class EventExportView(LoginRequiredMixin, View):
@@ -265,8 +259,9 @@ class EventExportView(LoginRequiredMixin, View):
 
         if event.description:
             # Escape description per RFC2445: backslash, semicolon, comma, newline
-            desc = event.description.replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
-            ics_lines.append(f"DESCRIPTION:{desc}")
+            text = utils.markdown_to_text(event.description)
+            text = text.replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
+            ics_lines.append(f"DESCRIPTION:{text}")
 
         if event.location:
             location_str = event.location.name
@@ -381,7 +376,6 @@ class EventCreateView(LoginRequiredMixin, CanManageEventMixin, CreateView):
                 child_event = Event(
                     title=parent_event.title,
                     description=parent_event.description,
-                    styled_description=parent_event.styled_description,
                     image=parent_event.image,
                     location=parent_event.location,
                     start_datetime=occurrence_dt,
@@ -401,12 +395,6 @@ class EventCreateView(LoginRequiredMixin, CanManageEventMixin, CreateView):
         # No recurrence - just save normally
         return super().form_valid(form)
 
-    def get_context_data(self, **kwargs):
-        """Add additional context for the template."""
-        context = super().get_context_data(**kwargs)
-        context["is_edit"] = False
-        return context
-
 
 class EventUpdateView(LoginRequiredMixin, CanManageEventMixin, UpdateView):
     """View for editing an existing event."""
@@ -422,7 +410,6 @@ class EventUpdateView(LoginRequiredMixin, CanManageEventMixin, UpdateView):
     def get_context_data(self, **kwargs):
         """Add additional context for the template."""
         context = super().get_context_data(**kwargs)
-        context["is_edit"] = True
         context["is_part_of_series"] = self.object.is_part_of_series()
 
         # If editing a series event, show update scope options
@@ -452,9 +439,8 @@ class EventUpdateView(LoginRequiredMixin, CanManageEventMixin, UpdateView):
         # Get the fields that changed
         tags = list(form.cleaned_data.get("tags", []))
         updated_fields = {
-            "title": form.cleaned_data.get("title"),
+            "name": form.cleaned_data.get("name"),
             "description": form.cleaned_data.get("description"),
-            "styled_description": form.cleaned_data.get("styled_description"),
             "image": form.cleaned_data.get("image"),
             "location": form.cleaned_data.get("location"),
             "webpage_url": form.cleaned_data.get("webpage_url"),
