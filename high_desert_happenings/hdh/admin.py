@@ -58,7 +58,7 @@ class EventAdmin(admin.ModelAdmin):
             None,
             {
                 "fields": (
-                    "title",
+                    "name",
                     "description",
                     "image",
                     "location",

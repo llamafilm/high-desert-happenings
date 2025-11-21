@@ -249,7 +249,7 @@ class EventExportView(LoginRequiredMixin, View):
             "PRODID:-//High Desert Happenings//Event//EN",
             "BEGIN:VEVENT",
             f"UID:{event.pk}@highdeserthappenings",
-            f"SUMMARY:{event.title}",
+            f"SUMMARY:{event.name}",
             f"DTSTAMP:{self.format_dt(timezone.now(), include_tz=False)}",
             f"DTSTART;{self.format_dt(start_dt)}",
         ]
@@ -298,7 +298,7 @@ class EventExportView(LoginRequiredMixin, View):
 
         # In debug mode, return as plain text for easier inspection
         # response = HttpResponse(ics_content, content_type="text/plain")
-        filename = f"{event.title.replace(' ', '_')}.ics"
+        filename = f"{event.name.replace(' ', '_')}.ics"
         response = HttpResponse(ics_content, content_type="text/calendar")
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
@@ -374,7 +374,7 @@ class EventCreateView(LoginRequiredMixin, CanManageEventMixin, CreateView):
 
             for occurrence_dt in occurrence_dates[1:]:  # Skip first as it's the parent
                 child_event = Event(
-                    title=parent_event.title,
+                    name=parent_event.name,
                     description=parent_event.description,
                     image=parent_event.image,
                     location=parent_event.location,

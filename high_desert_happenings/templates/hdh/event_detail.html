@@ -8,7 +8,7 @@
     <div class="row">
       <div class="col-md-8">
         <div class="d-flex justify-content-between align-items-start mb-3">
-          <h1 class="mb-0">{{ event.title }}</h1>
+          <h1 class="mb-0">{{ event.name }}</h1>
           {% if user.is_authenticated %}
             <div class="btn-group">
               <a href="{% url 'event_edit' event.pk %}" class="btn btn-primary">
@@ -39,7 +39,7 @@
         {% if event.image %}
           <img src="{{ event.image.url }}"
                class="img-fluid rounded mb-4"
-               alt="{{ event.title }}"
+               alt="{{ event.name }}"
                style="max-height: 500px;
                       max-width: 500px;
                       object-fit: cover" />
@@ -182,7 +182,7 @@
         </div>
         <div class="modal-body">
           <p>
-            Are you sure you want to delete "<strong>{{ event.title }}</strong>"?
+            Are you sure you want to delete "<strong>{{ event.name }}</strong>"?
           </p>
           {% if is_part_of_series %}
             <div class="alert alert-warning">

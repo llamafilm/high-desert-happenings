@@ -91,14 +91,14 @@
                 <a href="{% url 'event_detail' event.pk %}">
                   <img src="{{ event.image.url }}"
                        class="card-img-top"
-                       alt="{{ event.title }}"
+                       alt="{{ event.name }}"
                        style="height: 200px;
                               object-fit: cover" />
                 </a>
               {% endif %}
               <div class="card-body">
                 <h5 class="card-title">
-                  <a href="{% url 'event_detail' event.pk %}" class="text-decoration-none">{{ event.title }}</a>
+                  <a href="{% url 'event_detail' event.pk %}" class="text-decoration-none">{{ event.name }}</a>
                   {% if event.is_free %}<span class="badge bg-success">FREE</span>{% endif %}
                 </h5>
                 <p class="card-text">
