@@ -6,7 +6,7 @@ from .models import Event, Location, Tag
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
-    list_display = ["name", "neighborhood", "website"]
+    list_display = ["name", "neighborhood", "website", "owner"]
     list_filter = ["neighborhood"]
     search_fields = ["name", "neighborhood", "phone_number"]
 

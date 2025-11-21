@@ -220,6 +220,12 @@ class LocationUpdateView(LoginRequiredMixin, CanManageLocationMixin, UpdateView)
     form_class = LocationForm
     template_name = "hdh/location_form.html"
 
+    def form_valid(self, form):
+        """Set the owner field to the current user."""
+        # Preserve the original owner - don't allow it to be changed
+        form.instance.owner = self.get_object().owner
+        return super().form_valid(form)
+
     def get_success_url(self):
         """Redirect to location detail page after successful update."""
         return self.object.get_absolute_url()

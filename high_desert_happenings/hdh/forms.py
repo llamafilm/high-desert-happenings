@@ -75,7 +75,6 @@ class LocationForm(forms.ModelForm):
             "website",
             "image",
             "dogs_allowed",
-            "owner",
             "latitude",
             "longitude",
         ]
