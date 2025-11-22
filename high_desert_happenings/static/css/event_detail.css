@@ -1,0 +1,11 @@
+/* Event detail page styles */
+
+.event-image {
+  max-height: 500px;
+  max-width: 100%;
+  object-fit: cover;
+}
+
+.delete-form {
+  display: inline;
+}

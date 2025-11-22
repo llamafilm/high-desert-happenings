@@ -3,72 +3,78 @@
 {% load static %}
 {% load hdh_filters %}
 
-{% block title %}Events - High Desert Happenings{% endblock %}
+{% block title %}
+  Events - High Desert Happenings
+{% endblock title %}
+{% block css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/event_list.css' %}" />
+{% endblock css %}
 {% block javascript %}
   {{ block.super }}
   <script src="{% static 'js/event_list.js' %}"></script>
-{% endblock %}
+{% endblock javascript %}
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1>Upcoming Events</h1>
-    <a href="{% url 'event_create' %}" class="btn btn-primary">
-      <i class="bi bi-plus-circle"></i> Add Event
-    </a>
-  </div>
-  <!-- Day Selector Buttons -->
-  <div class="row mb-3">
-    <div class="col-md-12">
-      <div class="btn-group" role="group" aria-label="Day selector">
-        {% for day in day_buttons %}
-          <a href="?start_date={{ day.date|date:'Y-m-d' }}&end_date={{ day.date|date:'Y-m-d' }}"
-              class="btn {% if day.is_selected %}btn-primary{% else %}btn-outline-primary{% endif %}">
-            {{ day.display }}
-          </a>
-        {% endfor %}
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1>Upcoming Events</h1>
+      <a href="{% url 'event_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Add Event
+      </a>
+    </div>
+    <!-- Day Selector Buttons -->
+    <div class="row mb-3">
+      <div class="col-md-12">
+        <div class="btn-group w-sm-100" role="group" aria-label="Day selector">
+          {% for day in day_buttons %}
+            <a href="?start_date={{ day.date|date:'Y-m-d' }}&end_date={{ day.date|date:'Y-m-d' }}"
+               class="btn btn-sm d-flex align-items-center justify-content-center day-selector-btn {% if day.is_selected %}btn-primary{% else %}btn-outline-primary{% endif %}">
+              {{ day.display }}
+            </a>
+          {% endfor %}
+        </div>
       </div>
     </div>
-  </div>
-  <!-- Date Filter Form -->
-  <div class="row mb-4">
-    <div class="col-md-12">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">Filter Events</h5>
-          <form method="get" action="" class="row g-3">
-            <div class="col-md-2">
-              <label for="neighborhood" class="form-label">Neighborhood</label>
-              <select class="form-select" id="neighborhood" name="neighborhood">
-                <option value="">---</option>
-                {% for value, label in neighborhoods %}
+    <!-- Date Filter Form -->
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Filter Events</h5>
+            <form method="get" action="" class="row g-3">
+              <div class="col-md-2">
+                <label for="neighborhood" class="form-label">Neighborhood</label>
+                <select class="form-select" id="neighborhood" name="neighborhood">
+                  <option value="">---</option>
+                  {% for value, label in neighborhoods %}
                   <option value="{{ value }}"
-                          {% if request.GET.neighborhood == value %}selected{% endif %}>
+                    {% if request.GET.neighborhood == value %}selected{% endif %}>
                     {{ label }}
                   </option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label for="tag" class="form-label">Tag</label>
-              <select class="form-select" id="tag" name="tag">
-                <option value="">---</option>
-                {% for tag in tags %}
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label for="tag" class="form-label">Tag</label>
+                <select class="form-select" id="tag" name="tag">
+                  <option value="">---</option>
+                  {% for tag in tags %}
                   <option value="{{ tag.slug }}"
-                          {% if request.GET.tag == tag.slug %}selected{% endif %}>{{ tag.name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label for="age_restriction" class="form-label">Age range</label>
-              <select class="form-select" id="age_restriction" name="age_restriction">
-                <option value="">---</option>
-                <option value="children"
-                        {% if request.GET.age_restriction == "children" %}selected{% endif %}>Children</option>
-                <option value="21plus"
-                        {% if request.GET.age_restriction == "21plus" %}selected{% endif %}>21+</option>
-              </select>
-            </div>
-            <div class="col-md-2">
+                    {% if request.GET.tag == tag.slug %}selected{% endif %}>{{ tag.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label for="age_restriction" class="form-label">Age range</label>
+                <select class="form-select" id="age_restriction" name="age_restriction">
+                  <option value="">---</option>
+                  <option value="children"
+                    {% if request.GET.age_restriction == "children" %}selected{% endif %}>Children</option>
+                  <option value="21plus"
+                    {% if request.GET.age_restriction == "21plus" %}selected{% endif %}>21+</option>
+                </select>
+              </div>
+              <div class="col-md-2">
               <div class="form-check mt-4">
                 <input class="form-check-input"
                         type="checkbox"
@@ -78,177 +84,131 @@
                         {% if request.GET.dogs_allowed == "true" %}checked{% endif %} />
                 <label class="form-check-label" for="dogs_allowed">🐕 Dog Friendly</label>
               </div>
-            </div>
-            <div class="col-md-2">
-              <label for="start_date" class="form-label">Start Date</label>
-              <input type="date"
-                      class="form-control"
-                      id="start_date"
-                      name="start_date"
-                      value="{{ request.GET.start_date }}" />
-            </div>
-            <div class="col-md-2">
-              <label for="end_date" class="form-label">End Date</label>
-              <input type="date"
-                      class="form-control"
-                      id="end_date"
-                      name="end_date"
-                      value="{{ request.GET.end_date }}" />
-            </div>
-            <div class="col-md-12 d-flex justify-content-end">
-              <a href="{% url 'event_list' %}" class="btn btn-secondary">
-                <i class="bi bi-x-circle"></i> Clear
-              </a>
-            </div>
-          </form>
+              </div>
+              <div class="col-md-2">
+                <label for="start_date" class="form-label">Start Date</label>
+                <input type="date"
+                       class="form-control"
+                       id="start_date"
+                       name="start_date"
+                       value="{{ request.GET.start_date }}" />
+              </div>
+              <div class="col-md-2">
+                <label for="end_date" class="form-label">End Date</label>
+                <input type="date"
+                       class="form-control"
+                       id="end_date"
+                       name="end_date"
+                       value="{{ request.GET.end_date }}" />
+              </div>
+              <div class="col-md-12 d-flex justify-content-end">
+                <a href="{% url 'event_list' %}" class="btn btn-secondary">
+                  <i class="bi bi-x-circle"></i> Clear
+                </a>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="row">
-    <div class="col-md-12">
-      {% if events %}
-        <div class="row">
-          {% for event in events %}
-            <div class="col-12 mb-4">
-              <div class="card">
-                {% if event.image %}
+    <div class="row">
+      <div class="col-md-12">
+        {% if events %}
+          <div class="row">
+            {% for event in events %}
+              <div class="col-12 mb-4">
+                <div class="card">
                   <div class="row g-0">
-                    <div class="col-md-3">
-                      <a href="{% url 'event_detail' event.pk %}">
-                        <img src="{{ event.image.url }}"
-                            class="img-fluid rounded-start"
-                            alt="{{ event.name }}"
-                            style="height: 200px;
-                                    width: 100%;
-                                    object-fit: cover" />
+                    <div class="{% if event.image %}col-md-9{% else %}col-md-12{% endif %}">
+                      <a href="{% url 'event_detail' event.pk %}"
+                        class="text-decoration-none text-dark">
+                        <div class="card-body">
+                          <h5 class="card-title">{{ event.name }}</h5>
+                          <p class="card-text">
+                            <strong><i class="bi bi-calendar-event"></i> When:</strong>
+                            {{ event.start_datetime|friendly_datetime }}
+                            {% if event.parent_event or event.recurrence_instances.exists %}
+                              <span class="badge bg-info ms-2" title="Part of recurring series">
+                                <i class="bi bi-arrow-repeat"></i> Recurring
+                              </span>
+                            {% endif %}
+                          </p>
+                          {% if event.location %}
+                            <p class="card-text">
+                              <strong><i class="bi bi-geo-alt"></i> Where:</strong>
+                              {{ event.location.name }}
+                              {% if event.location.city %}- {{ event.location.city }}{% endif %}
+                            </p>
+                          {% endif %}
+                          {% if event.description %}<p class="card-text">{{ event.description|linebreaksbr|truncatewords:20 }}</p>{% endif %}
+                          <!-- Badges and Tags -->
+                          <div class="mb-2">
+                            {% if event.is_free %}<span class="badge bg-success me-1">FREE</span>{% endif %}
+                            {% if event.age_restriction == "children" %}
+                              <span class="badge bg-warning me-1" title="Children event">
+                                <i class="bi bi-balloon"></i> Children
+                              </span>
+                            {% elif event.age_restriction == "21plus" %}
+                              <span class="badge bg-warning text-dark me-1" title="21+ only">
+                                <i class="bi bi-shield-check"></i> 21+
+                              </span>
+                            {% endif %}
+                            {% if event.tags.all %}
+                              {% for tag in event.tags.all %}
+                                <a href="?tag={{ tag.slug }}"
+                                  class="badge bg-secondary text-decoration-none me-1">{{ tag.name }}</a>
+                              {% endfor %}
+                            {% endif %}
+                          </div>
+                        </div>
                       </a>
                     </div>
-                    <div class="col-md-9">
-                      <div class="card-body">
-                        <h5 class="card-title">
-                          <a href="{% url 'event_detail' event.pk %}" class="text-decoration-none">{{ event.name }}</a>
-                        </h5>
-                        <p class="card-text">
-                          <strong><i class="bi bi-calendar-event"></i> When:</strong>
-                          {{ event.start_datetime|friendly_datetime }}
-                          {% if event.parent_event or event.recurrence_instances.exists %}
-                            <span class="badge bg-info ms-2" title="Part of recurring series">
-                              <i class="bi bi-arrow-repeat"></i> Recurring
-                            </span>
-                          {% endif %}
-                        </p>
-                        {% if event.location %}
-                          <p class="card-text">
-                            <strong><i class="bi bi-geo-alt"></i> Where:</strong>
-                            <a href="{% url 'location_detail' event.location.pk %}"
-                              class="text-decoration-none">{{ event.location.name }}</a>
-                            {% if event.location.city %}- {{ event.location.city }}{% endif %}
-                          </p>
-                        {% endif %}
-                        {% if event.description %}<p class="card-text">{{ event.description|linebreaksbr|truncatewords:20 }}</p>{% endif %}
-                        <!-- Badges and Tags -->
-                        <div class="mb-2">
-                          {% if event.is_free %}<span class="badge bg-success me-1">FREE</span>{% endif %}
-                          {% if event.age_restriction == "children" %}
-                            <span class="badge bg-warning me-1" title="Children event">
-                              <i class="bi bi-balloon"></i> Children
-                            </span>
-                          {% elif event.age_restriction == "21plus" %}
-                            <span class="badge bg-warning text-dark me-1" title="21+ only">
-                              <i class="bi bi-shield-check"></i> 21+
-                            </span>
-                          {% endif %}
-                          {% if event.tags.all %}
-                            {% for tag in event.tags.all %}
-                              <a href="?tag={{ tag.slug }}"
-                                class="badge bg-secondary text-decoration-none me-1">{{ tag.name }}</a>
-                            {% endfor %}
-                          {% endif %}
-                        </div>
+                    {% if event.image %}
+                      <div class="col-md-3">
+                        <a href="{% url 'event_detail' event.pk %}">
+                          <img src="{{ event.image.url }}"
+                               class="img-fluid rounded-end event-image"
+                               alt="{{ event.name }}" />
+                        </a>
                       </div>
-                    </div>
-                  </div>
-                {% else %}
-                  <div class="card-body">
-                    <h5 class="card-title">
-                      <a href="{% url 'event_detail' event.pk %}" class="text-decoration-none">{{ event.name }}</a>
-                    </h5>
-                    <p class="card-text">
-                      <strong><i class="bi bi-calendar-event"></i> When:</strong>
-                      {{ event.start_datetime|friendly_datetime }}
-                      {% if event.parent_event or event.recurrence_instances.exists %}
-                        <span class="badge bg-info ms-2" title="Part of recurring series">
-                          <i class="bi bi-arrow-repeat"></i> Recurring
-                        </span>
-                      {% endif %}
-                    </p>
-                    {% if event.location %}
-                      <p class="card-text">
-                        <strong><i class="bi bi-geo-alt"></i> Where:</strong>
-                        <a href="{% url 'location_detail' event.location.pk %}"
-                          class="text-decoration-none">{{ event.location.name }}</a>
-                        {% if event.location.city %}- {{ event.location.city }}{% endif %}
-                      </p>
                     {% endif %}
-                    {% if event.description %}<p class="card-text">{{ event.description|linebreaksbr|truncatewords:20 }}</p>{% endif %}
-                    <!-- Badges and Tags -->
-                    <div class="mb-2">
-                      {% if event.is_free %}<span class="badge bg-success me-1">FREE</span>{% endif %}
-                      {% if event.age_restriction == "children" %}
-                        <span class="badge bg-warning me-1" title="Children event">
-                          <i class="bi bi-balloon"></i> Children
-                        </span>
-                      {% elif event.age_restriction == "21plus" %}
-                        <span class="badge bg-warning text-dark me-1" title="21+ only">
-                          <i class="bi bi-shield-check"></i> 21+
-                        </span>
-                      {% endif %}
-                      {% if event.tags.all %}
-                        {% for tag in event.tags.all %}
-                          <a href="?tag={{ tag.slug }}"
-                            class="badge bg-secondary text-decoration-none me-1">{{ tag.name }}</a>
-                        {% endfor %}
-                      {% endif %}
-                    </div>
                   </div>
-                {% endif %}
+                </div>
               </div>
-            </div>
-          {% endfor %}
-        </div>
-        <!-- Pagination -->
-        {% if is_paginated %}
-          <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
-              {% if page_obj.has_previous %}
-                <li class="page-item">
-                  <a class="page-link" href="?page=1">First</a>
+            {% endfor %}
+          </div>
+          <!-- Pagination -->
+          {% if is_paginated %}
+            <nav aria-label="Page navigation">
+              <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page=1">First</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                  </li>
+                {% endif %}
+                <li class="page-item active">
+                  <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
                 </li>
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                </li>
-              {% endif %}
-              <li class="page-item active">
-                <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-              </li>
-              {% if page_obj.has_next %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-                </li>
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-                </li>
-              {% endif %}
-            </ul>
-          </nav>
+                {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                  </li>
+                {% endif %}
+              </ul>
+            </nav>
+          {% endif %}
+        {% else %}
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No events found.
+          </div>
         {% endif %}
-      {% else %}
-        <div class="alert alert-info">
-          <i class="bi bi-info-circle"></i> No events found.
-        </div>
-      {% endif %}
+      </div>
     </div>
   </div>
-</div>
-{% endblock %}
+{% endblock content %}

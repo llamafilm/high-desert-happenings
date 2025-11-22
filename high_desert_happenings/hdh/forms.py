@@ -56,7 +56,7 @@ class EventForm(forms.ModelForm):
 
         # Hide recurrence field when editing an existing event
         if self.instance.pk:
-            self.fields.pop("create_recurrence", None)
+            self.fields.pop("recurrence_pattern", None)
 
 
 class LocationForm(forms.ModelForm):
