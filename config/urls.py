@@ -7,6 +7,7 @@ from django.views.generic import RedirectView, TemplateView
 from django.views.i18n import JavaScriptCatalog
 
 urlpatterns = [
+    # Redirect root to events list
     path("", RedirectView.as_view(url="/events/", permanent=False)),
     path(
         "about/",
@@ -29,6 +30,8 @@ urlpatterns = [
     path("markdownx/", include("markdownx.urls")),
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
+    # Prometheus metrics
+    path("", include("django_prometheus.urls")),
 ]
 
 
