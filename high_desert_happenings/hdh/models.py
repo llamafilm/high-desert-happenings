@@ -164,7 +164,7 @@ class Location(models.Model):
     def _geocode(self):
         """Geocode the location using OpenStreetMap Nominatim."""
 
-        logger.info("Geocoding location %s: %s, %s", self.pk, self.name, self.address)
+        logger.debug("Geocoding location %s: %s, %s", self.pk, self.name, self.address)
 
         url = "https://nominatim.openstreetmap.org/search"
         headers = {"User-Agent": "HighDesertHappenings/1.0"}
@@ -182,7 +182,7 @@ class Location(models.Model):
             response = requests.get(url, params=params, headers=headers, timeout=10)
             response.raise_for_status()
             data = response.json()
-            logger.info("Geocoding response data: %s", data)
+            logger.debug("Geocoding response data: %s", data)
 
         except requests.RequestException as e:
             logger.warning("Failed to geocode location '%s': %s", self.name, str(e))

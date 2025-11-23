@@ -8,7 +8,7 @@ from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
-from django.test import RequestFactory, TestCase, override_settings
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
@@ -148,7 +148,6 @@ class EventPermissionsIntegrationTest(PermissionsTestBase):
         response = self.client.get(reverse("event_edit", kwargs={"pk": self.test_event.pk}))
         assert response.status_code == HTTPStatus.OK
 
-    @override_settings(DEBUG=False)
     def test_other_user_cannot_access_edit_page(self):
         """Test that other users are denied access to edit page."""
         with self.assertLogs("django.request", level="WARNING"):
@@ -269,7 +268,6 @@ class LocationPermissionsIntegrationTest(PermissionsTestBase):
         response = self.client.get(reverse("location_edit", kwargs={"pk": self.location.pk}))
         assert response.status_code == HTTPStatus.OK
 
-    @override_settings(DEBUG=False)
     def test_other_user_cannot_access_edit_page(self):
         """Test that other users are denied access to edit page."""
         with self.assertLogs("django.request", level="WARNING"):
