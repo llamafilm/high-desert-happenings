@@ -1,0 +1,39 @@
+# Differences from production:
+# - skip awscli
+# - use environment instead of env_file
+# - no postgres volume
+# - no HTTPS redirect
+
+services:
+  django:
+    image: ${REGISTRY}/${IMAGE_NAME}-django:${BRANCH_NAME:-main}
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DJANGO_SECRET_KEY: test-secret-key-for-ci-only
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      DJANGO_SECURE_SSL_REDIRECT: "False"
+      DJANGO_ALLOWED_HOSTS: "*"
+      DJANGO_ADMIN_URL: admin/
+      REDIS_URL: redis://redis:6379/0
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: test_db
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      DJANGO_AWS_ACCESS_KEY_ID: test
+      DJANGO_AWS_SECRET_ACCESS_KEY: test
+      DJANGO_AWS_STORAGE_BUCKET_NAME: test-bucket
+      DJANGO_AWS_REGION_NAME: us-west-2
+    command: /start
+
+  postgres:
+    image: ${REGISTRY}/${IMAGE_NAME}-postgres:${BRANCH_NAME:-main}
+    environment:
+      POSTGRES_DB: test_db
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+
+  redis:
+    image: docker.io/redis:7.2

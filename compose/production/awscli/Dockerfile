@@ -4,7 +4,7 @@ FROM docker.io/amazon/aws-cli:2.31.0
 ENTRYPOINT []
 CMD ["/bin/bash"]
 
-COPY ./compose/production/aws/maintenance /usr/local/bin/maintenance
+COPY ./compose/production/awscli/maintenance /usr/local/bin/maintenance
 COPY ./compose/production/postgres/maintenance/_sourced /usr/local/bin/maintenance/_sourced
 
 RUN chmod +x /usr/local/bin/maintenance/*

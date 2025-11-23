@@ -54,7 +54,7 @@ services:
   awscli:
     build:
       context: .
-      dockerfile: ./compose/production/aws/Dockerfile
+      dockerfile: ./compose/production/awscli/Dockerfile
     image: ${REGISTRY}/${IMAGE_NAME}-awscli:main
     env_file:
       - ./.envs/.production/.django

@@ -3,8 +3,7 @@ With these settings, tests run faster.
 """
 
 from .base import *  # noqa: F403
-from .base import TEMPLATES
-from .base import env
+from .base import TEMPLATES, env
 
 # GENERAL
 # ------------------------------------------------------------------------------
@@ -15,14 +14,6 @@ SECRET_KEY = env(
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#test-runner
 TEST_RUNNER = "django.test.runner.DiscoverRunner"
-
-# INSTALLED APPS
-# ------------------------------------------------------------------------------
-# Remove django.contrib.sites to avoid PostgreSQL-specific migrations with SQLite
-INSTALLED_APPS = [app for app in INSTALLED_APPS if app != "django.contrib.sites"]  # noqa: F405
-
-# Remove django-allauth apps that depend on sites
-INSTALLED_APPS = [app for app in INSTALLED_APPS if not app.startswith("allauth")]  # noqa: F405
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
