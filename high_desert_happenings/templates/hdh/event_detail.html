@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load bootstrap_icons %}
 
 {% block title %}
   {{ event.name }} - High Desert Happenings
@@ -17,35 +18,25 @@
           <h1 class="mb-0">{{ event.name }}</h1>
           {% if user.is_authenticated %}
             <div class="btn-group">
-              <a href="{% url 'event_edit' event.pk %}" class="btn btn-primary">
-                <i class="bi bi-pencil"></i> Edit
-              </a>
+              <a href="{% url 'event_edit' event.pk %}" class="btn btn-primary">{% icon "pencil" %} Edit</a>
               <button type="button"
                       class="btn btn-danger"
                       data-bs-toggle="modal"
-                      data-bs-target="#deleteModal">
-                <i class="bi bi-trash"></i> Delete
-              </button>
+                      data-bs-target="#deleteModal">{% icon "trash" %} Delete</button>
             </div>
           {% endif %}
         </div>
         <!-- Badges -->
         <div class="mb-3">
           {% if event.age_restriction == "children" %}
-            <span class="badge bg-warning me-2" title="Children event">
-              <i class="bi bi-balloon"></i> Children
-            </span>
+            <span class="badge bg-warning me-2" title="Children event">{% icon "balloon" %} Children</span>
           {% elif event.age_restriction == "21plus" %}
-            <span class="badge bg-warning text-dark me-2" title="21+ only">
-              <i class="bi bi-shield-check"></i> 21+
-            </span>
+            <span class="badge bg-warning text-dark me-2" title="21+ only">{% icon "shield-check" %} 21+</span>
           {% endif %}
           {% if event.is_free %}<span class="badge bg-success">FREE</span>{% endif %}
         </div>
         <div class="mb-3">
-          <h5>
-            <i class="bi bi-calendar-event"></i> When
-          </h5>
+          <h5>{% icon "calendar-event" %} When</h5>
           <p>
             {{ event.start_datetime|date:"l, F j, Y" }} at {{ event.start_datetime|date:"g:i A" }}
             {% if event.end_datetime %}- {{ event.end_datetime|date:"g:i A" }}{% endif %}
@@ -53,7 +44,7 @@
           {% if is_part_of_series %}
             <div class="alert alert-info">
               <p class="mb-2">
-                <i class="bi bi-arrow-repeat"></i> <strong>This event is part of a recurring series</strong>
+                {% icon "arrow-repeat" %} <strong>This event is part of a recurring series</strong>
               </p>
               <details>
                 <summary class="mb-2">View all dates in this series ({{ series_events.count }} events)</summary>
@@ -76,19 +67,13 @@
           {% if event.webpage_url %}
             <a href="{{ event.webpage_url }}"
                class="btn btn-primary me-2"
-               target="_blank">
-              <i class="bi bi-link-45deg"></i> Event Website
-            </a>
+               target="_blank">{% icon "link-45deg" %} Event Website</a>
           {% endif %}
           <a href="{% url 'event_export' event.pk %}"
-             class="btn btn-secondary me-2">
-            <i class="bi bi-download"></i> Add to iCal
-          </a>
+             class="btn btn-secondary me-2">{% icon "download" %} Add to iCal</a>
           <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text={{ event.name|urlencode }}&dates={{ event.start_datetime|date:'Ymd\THis\Z' }}/{% if event.end_datetime %}{{ event.end_datetime|date:'Ymd\THis\Z' }}{% else %}{{ event.start_datetime|date:'Ymd\THis\Z' }}{% endif %}&details={{ event.description|urlencode }}&location={% if event.location %}{{ event.location.name|urlencode }}{% if event.location.address %}, {{ event.location.address|urlencode }}{% endif %}{% endif %}&ctz=America/Los_Angeles"
              target="_blank"
-             class="btn btn-secondary">
-            <i class="bi bi-calendar-plus"></i> Google Calendar
-          </a>
+             class="btn btn-secondary">{% icon "calendar-plus" %} Google Calendar</a>
         </div>
         {% if event.image %}
           <img src="{{ event.image.url }}"
@@ -115,13 +100,11 @@
         {% endif %}
         {% if event.created_by %}
           <div class="mb-3 text-muted small">
-            <i class="bi bi-person"></i> Posted by {{ event.created_by.name|default:event.created_by.username }}
+            {% icon "person" %} Posted by {{ event.created_by.name|default:event.created_by.username }}
           </div>
         {% endif %}
         <div class="mt-4">
-          <a href="{% url 'event_list' %}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Back to Events
-          </a>
+          <a href="{% url 'event_list' %}" class="btn btn-secondary">{% icon "arrow-left" %} Back to Events</a>
         </div>
       </div>
       <div class="col-md-4">
@@ -132,7 +115,7 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">
-                <i class="bi bi-geo-alt"></i>
+                {% icon "geo-alt" %}
                 <a href="{% url 'location_detail' event.location.pk %}"
                    class="text-decoration-none">{{ event.location.name }}</a>
               </h5>
@@ -146,27 +129,21 @@
               {% endif %}
               {% if event.location.phone_number %}
                 <p class="mb-2 small">
-                  <i class="bi bi-telephone"></i> <a href="tel:{{ event.location.phone_number }}">{{ event.location.phone_number }}</a>
+                  {% icon "telephone" %} <a href="tel:{{ event.location.phone_number }}">{{ event.location.phone_number }}</a>
                 </p>
               {% endif %}
               {% if event.location.website %}
                 <a href="{{ event.location.website }}"
                    target="_blank"
-                   class="btn btn-sm btn-outline-primary me-1 mb-2">
-                  <i class="bi bi-globe"></i> Website
-                </a>
+                   class="btn btn-sm btn-outline-primary me-1 mb-2">{% icon "globe" %} Website</a>
               {% endif %}
               {% if event.location.address %}
                 <a href="https://www.google.com/maps/search/?api=1&query={{ event.location.address|urlencode }}%2C+{{ event.location.city|urlencode }}%2C+{{ event.location.state|urlencode }}+{{ event.location.zip_code|urlencode }}{% if event.location.latitude and event.location.longitude %}&query_place_id={{ event.location.latitude }},{{ event.location.longitude }}{% endif %}"
                    target="_blank"
-                   class="btn btn-sm btn-outline-primary me-1 mb-2">
-                  <i class="bi bi-map"></i> Google Maps
-                </a>
+                   class="btn btn-sm btn-outline-primary me-1 mb-2">{% icon "map" %} Google Maps</a>
                 <a href="https://www.openstreetmap.org/?mlat={{ event.location.latitude }}&mlon={{ event.location.longitude }}{% if event.location.latitude and event.location.longitude %}&zoom=16{% endif %}#map=16/{{ event.location.latitude }}/{{ event.location.longitude }}"
                    target="_blank"
-                   class="btn btn-sm btn-outline-success mb-2">
-                  <i class="bi bi-map"></i> OpenStreetMap
-                </a>
+                   class="btn btn-sm btn-outline-success mb-2">{% icon "map" %} OpenStreetMap</a>
               {% endif %}
             </div>
           </div>
@@ -196,7 +173,7 @@
           {% if is_part_of_series %}
             <div class="alert alert-warning">
               <p class="mb-2">
-                <i class="bi bi-exclamation-triangle"></i> <strong>This event is part of a recurring series</strong>
+                {% icon "exclamation-triangle" %} <strong>This event is part of a recurring series</strong>
               </p>
               <p class="mb-2">Choose what to delete:</p>
               <div class="form-check">

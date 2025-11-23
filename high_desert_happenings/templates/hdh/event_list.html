@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load hdh_filters %}
+{% load bootstrap_icons %}
 
 {% block title %}
   Events - High Desert Happenings
@@ -18,9 +19,7 @@
   <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h1>Upcoming Events</h1>
-      <a href="{% url 'event_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Add Event
-      </a>
+      <a href="{% url 'event_create' %}" class="btn btn-primary">{% icon "plus-circle" %} Add Event</a>
     </div>
     <!-- Day Selector Buttons -->
     <div class="row mb-3">
@@ -103,7 +102,7 @@
               </div>
               <div class="col-md-12 d-flex justify-content-end">
                 <a href="{% url 'event_list' %}" class="btn btn-secondary">
-                  <i class="bi bi-x-circle"></i> Clear
+                  {% icon "x-circle" %} Clear
                 </a>
               </div>
             </form>
@@ -125,17 +124,17 @@
                         <div class="card-body">
                           <h5 class="card-title">{{ event.name }}</h5>
                           <p class="card-text">
-                            <strong><i class="bi bi-calendar-event"></i> When:</strong>
+                            <strong>{% icon "calendar-event" %} When:</strong>
                             {{ event.start_datetime|friendly_datetime }}
                             {% if event.parent_event or event.recurrence_instances.exists %}
                               <span class="badge bg-info ms-2" title="Part of recurring series">
-                                <i class="bi bi-arrow-repeat"></i> Recurring
+                                {% icon "arrow-repeat" %} Recurring
                               </span>
                             {% endif %}
                           </p>
                           {% if event.location %}
                             <p class="card-text">
-                              <strong><i class="bi bi-geo-alt"></i> Where:</strong>
+                              <strong>{% icon "geo-alt" %} Where:</strong>
                               {{ event.location.name }}
                               {% if event.location.city %}- {{ event.location.city }}{% endif %}
                             </p>
@@ -146,11 +145,11 @@
                             {% if event.is_free %}<span class="badge bg-success me-1">FREE</span>{% endif %}
                             {% if event.age_restriction == "children" %}
                               <span class="badge bg-warning me-1" title="Children event">
-                                <i class="bi bi-balloon"></i> Children
+                                {% icon "balloon" %} Children
                               </span>
                             {% elif event.age_restriction == "21plus" %}
                               <span class="badge bg-warning text-dark me-1" title="21+ only">
-                                <i class="bi bi-shield-check"></i> 21+
+                                {% icon "shield-check" %} 21+
                               </span>
                             {% endif %}
                             {% if event.tags.all %}
@@ -205,7 +204,7 @@
           {% endif %}
         {% else %}
           <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> No events found.
+            {% icon "info-circle" %} No events found.
           </div>
         {% endif %}
       </div>

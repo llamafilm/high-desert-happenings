@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load crispy_forms_tags %}
+{% load bootstrap_icons %}
 
 {% block title %}
   {% if object.pk %}
@@ -64,13 +65,9 @@
           {% endif %}
           {% for field in form %}{{ field|as_crispy_field }}{% endfor %}
           <div class="d-flex gap-2 mt-4">
-            <button type="submit" class="btn btn-primary">
-              <i class="bi bi-save"></i> Save Event
-            </button>
+            <button type="submit" class="btn btn-primary">{% icon "save" %} Save Event</button>
             <a href="{% if object %}{% url 'event_detail' object.pk %}{% else %}{% url 'event_list' %}{% endif %}"
-               class="btn btn-secondary">
-              <i class="bi bi-x-circle"></i> Cancel
-            </a>
+               class="btn btn-secondary">{% icon "x-circle" %} Cancel</a>
           </div>
         </form>
       </div>

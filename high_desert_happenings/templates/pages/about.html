@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load bootstrap_icons %}
 
 {% block title %}About - High Desert Happenings{% endblock %}
 {% block content %}
@@ -20,25 +21,25 @@
           <h3>What We Offer</h3>
           <ul class="list-unstyled">
             <li class="mb-3">
-              <i class="bi bi-calendar-event text-primary"></i>
+              {% icon "calendar-event" %}
               <strong>Comprehensive Event Listings</strong>
               <br />
               <span class="text-muted">Browse concerts, festivals, art shows, farmers markets, and more</span>
             </li>
             <li class="mb-3">
-              <i class="bi bi-geo-alt text-primary"></i>
+              {% icon "geo-alt" %}
               <strong>Local Venues & Locations</strong>
               <br />
               <span class="text-muted">Discover great spots for events throughout the High Desert</span>
             </li>
             <li class="mb-3">
-              <i class="bi bi-funnel text-primary"></i>
+              {% icon "funnel" %}
               <strong>Easy Filtering</strong>
               <br />
               <span class="text-muted">Find exactly what you're looking for by date, tag, or location</span>
             </li>
             <li class="mb-3">
-              <i class="bi bi-arrow-repeat text-primary"></i>
+              {% icon "arrow-repeat" %}
               <strong>Recurring Events</strong>
               <br />
               <span class="text-muted">Never miss weekly markets, monthly meetups, or annual traditions</span>
@@ -62,9 +63,7 @@
           </p>
         </div>
         <div class="mt-4 mb-5">
-          <a href="{% url 'event_list' %}" class="btn btn-primary">
-            <i class="bi bi-calendar-event"></i> Browse Events
-          </a>
+          <a href="{% url 'event_list' %}" class="btn btn-primary">{% icon "calendar-event" %} Browse Events</a>
         </div>
       </div>
     </div>

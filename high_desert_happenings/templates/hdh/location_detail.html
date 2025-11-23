@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load bootstrap_icons %}
 
 {% block title %}{{ location.name }} - High Desert Happenings{% endblock %}
 {% block content %}
@@ -11,15 +12,11 @@
           <h1>{{ location.name }}</h1>
           {% if user.is_authenticated %}
             <div class="d-flex gap-2">
-              <a href="{% url 'location_edit' location.pk %}" class="btn btn-primary">
-                <i class="bi bi-pencil"></i> Edit
-              </a>
+              <a href="{% url 'location_edit' location.pk %}" class="btn btn-primary">{% icon "pencil" %} Edit</a>
               <button type="button"
                       class="btn btn-danger"
                       data-bs-toggle="modal"
-                      data-bs-target="#deleteModal">
-                <i class="bi bi-trash"></i> Delete
-              </button>
+                      data-bs-target="#deleteModal">{% icon "trash" %} Delete</button>
             </div>
           {% endif %}
         </div>
@@ -49,22 +46,16 @@
             {% if location.latitude and location.longitude %}
               <a href="https://www.google.com/maps/search/?api=1&query={{ location.address|urlencode }}%2C+{{ location.city|urlencode }}%2C+{{ location.state|urlencode }}+{{ location.zip_code|urlencode }}{% if location.latitude and location.longitude %}&query_place_id={{ location.latitude }},{{ location.longitude }}{% endif %}"
                  target="_blank"
-                 class="btn btn-sm btn-outline-primary me-1 mb-2">
-                <i class="bi bi-map"></i> Google Maps
-              </a>
+                 class="btn btn-sm btn-outline-primary me-1 mb-2">{% icon "map" %} Google Maps</a>
               <a href="https://www.openstreetmap.org/?mlat={{ location.latitude }}&mlon={{ location.longitude }}{% if location.latitude and location.longitude %}&zoom=16{% endif %}#map=16/{{ location.latitude }}/{{ location.longitude }}"
                  target="_blank"
-                 class="btn btn-sm btn-outline-success mb-2">
-                <i class="bi bi-map"></i> OpenStreetMap
-              </a>
+                 class="btn btn-sm btn-outline-success mb-2">{% icon "map" %} OpenStreetMap</a>
             {% endif %}
           </div>
         {% endif %}
         {% if location.phone_number %}
           <div class="mb-3">
-            <h5>
-              <i class="bi bi-telephone"></i> Phone
-            </h5>
+            <h5>{% icon "telephone" %} Phone</h5>
             <p>
               <a href="tel:{{ location.phone_number }}">{{ location.phone_number }}</a>
             </p>
@@ -73,9 +64,7 @@
         {% if location.website %}
           <a href="{{ location.website }}"
              target="_blank"
-             class="btn btn-sm btn-outline-primary me-1 mb-2">
-            <i class="bi bi-globe"></i> Website
-          </a>
+             class="btn btn-sm btn-outline-primary me-1 mb-2">{% icon "globe" %} Website</a>
         {% endif %}
       </div>
       <div class="col-md-4">{% include "hdh/includes/location_map.html" %}</div>
@@ -102,7 +91,7 @@
                   {% if event.is_free %}<span class="badge bg-success">FREE</span>{% endif %}
                 </h5>
                 <p class="card-text">
-                  <strong><i class="bi bi-calendar-event"></i> When:</strong>
+                  <strong>{% icon "calendar-event" %} When:</strong>
                   {{ event.start_datetime|date:"F j, Y g:i A" }}
                   {% if event.end_datetime %}- {{ event.end_datetime|date:"g:i A" }}{% endif %}
                 </p>
@@ -118,9 +107,7 @@
                 {% if event.webpage_url %}
                   <a href="{{ event.webpage_url }}"
                      class="btn btn-primary btn-sm"
-                     target="_blank">
-                    <i class="bi bi-link-45deg"></i> More Info
-                  </a>
+                     target="_blank">{% icon "link-45deg" %} More Info</a>
                 {% endif %}
               </div>
             </div>
@@ -128,14 +115,10 @@
         {% endfor %}
       </div>
     {% else %}
-      <div class="alert alert-info">
-        <i class="bi bi-info-circle"></i> No upcoming events at this location.
-      </div>
+      <div class="alert alert-info">{% icon "info-circle" %} No upcoming events at this location.</div>
     {% endif %}
     <div class="mt-4">
-      <a href="{% url 'event_list' %}" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Back to All Events
-      </a>
+      <a href="{% url 'event_list' %}" class="btn btn-secondary">{% icon "arrow-left" %} Back to All Events</a>
     </div>
   </div>
   <!-- Delete Modal -->
@@ -157,7 +140,7 @@
           <p>Are you sure you want to delete "{{ location.name }}"?</p>
           {% if events %}
             <div class="alert alert-warning">
-              <i class="bi bi-exclamation-triangle"></i> <strong>Warning:</strong> This location has {{ events|length }} associated event(s). Deleting the location will not delete the events, but they will no longer be associated with this location.
+              {% icon "exclamation-triangle" %} <strong>Warning:</strong> This location has {{ events|length }} associated event(s). Deleting the location will not delete the events, but they will no longer be associated with this location.
             </div>
           {% endif %}
           <p class="text-danger">This action cannot be undone.</p>
@@ -168,9 +151,7 @@
                 action="{% url 'location_delete' location.pk %}"
                 style="display: inline">
             {% csrf_token %}
-            <button type="submit" class="btn btn-danger">
-              <i class="bi bi-trash"></i> Delete Location
-            </button>
+            <button type="submit" class="btn btn-danger">{% icon "trash" %} Delete Location</button>
           </form>
         </div>
       </div>

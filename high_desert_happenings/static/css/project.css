@@ -153,3 +153,10 @@ div.recurrence-widget {
 a.add-button {
     color: rgb(33, 37, 41) !important ;
 }
+
+/* bootstrap icons */
+.bi {
+  width: 1em;
+  height: 1em;
+  vertical-align: -.125em;
+}

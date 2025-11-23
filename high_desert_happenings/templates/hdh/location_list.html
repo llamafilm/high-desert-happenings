@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load bootstrap_icons %}
 
 {% block title %}Locations - High Desert Happenings{% endblock %}
 {% block content %}
@@ -8,9 +9,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h1>Locations</h1>
       {% if user.is_authenticated %}
-        <a href="{% url 'location_create' %}" class="btn btn-primary">
-          <i class="bi bi-plus-circle"></i> Add Location
-        </a>
+        <a href="{% url 'location_create' %}" class="btn btn-primary">{% icon "plus-circle" %} Add Location</a>
       {% endif %}
     </div>
     <!-- Filter Form -->
@@ -43,9 +42,7 @@
                 </select>
               </div>
               <div class="col-md-3 d-flex align-items-end">
-                <a href="{% url 'location_list' %}" class="btn btn-secondary">
-                  <i class="bi bi-x-circle"></i> Clear
-                </a>
+                <a href="{% url 'location_list' %}" class="btn btn-secondary">{% icon "x-circle" %} Clear</a>
               </div>
             </form>
           </div>
@@ -68,9 +65,7 @@
                 </a>
               {% else %}
                 <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
-                     style="height: 200px">
-                  <i class="bi bi-geo-alt text-white" style="font-size: 4rem;"></i>
-                </div>
+                     style="height: 200px">{% icon "geo-alt-fill" style="width: 30%; height: 30%" %}</div>
               {% endif %}
               <div class="card-body">
                 <h5 class="card-title">
@@ -84,7 +79,7 @@
                 {% endif %}
                 {% if location.address or location.city %}
                   <p class="card-text text-muted small mb-2">
-                    <i class="bi bi-geo-alt"></i>
+                    {% icon "geo-alt" %}
                     {% if location.address %}
                       {{ location.address }}
                       <br />
@@ -96,30 +91,24 @@
                   </p>
                 {% endif %}
                 {% if location.dogs_allowed == True %}
-                  <span class="badge bg-success" title="Dogs allowed">
-                    <i class="bi bi-heart"></i> Dog Friendly 🐕
-                  </span>
+                  <span class="badge bg-success" title="Dogs allowed">{% icon "heart" %} Dog Friendly 🐕</span>
                 {% elif location.dogs_allowed == False %}
-                  <span class="badge bg-danger" title="No dogs allowed">
-                    <i class="bi bi-slash-circle"></i> No Dogs
-                  </span>
+                  <span class="badge bg-danger" title="No dogs allowed">{% icon "slash-circle" %} No Dogs</span>
                 {% endif %}
                 {% if location.phone_number %}
                   <p class="card-text small mt-2 mb-1">
-                    <i class="bi bi-telephone"></i> <a href="tel:{{ location.phone_number }}">{{ location.phone_number }}</a>
+                    {% icon "telephone" %} <a href="tel:{{ location.phone_number }}">{{ location.phone_number }}</a>
                   </p>
                 {% endif %}
                 {% if location.website %}
                   <p class="card-text small mb-0">
-                    <i class="bi bi-globe"></i> <a href="{{ location.website }}" target="_blank">Website</a>
+                    {% icon "globe" %} <a href="{{ location.website }}" target="_blank">Website</a>
                   </p>
                 {% endif %}
               </div>
               <div class="card-footer bg-transparent">
                 <a href="{% url 'location_detail' location.pk %}"
-                   class="btn btn-sm btn-outline-primary">
-                  <i class="bi bi-info-circle"></i> View Details
-                </a>
+                   class="btn btn-sm btn-outline-primary">{% icon "info-circle" %} View Details</a>
               </div>
             </div>
           </div>
@@ -177,14 +166,10 @@
         </nav>
       {% endif %}
     {% else %}
-      <div class="alert alert-info">
-        <i class="bi bi-info-circle"></i> No locations found matching your filters.
-      </div>
+      <div class="alert alert-info">{% icon "info-circle" %} No locations found matching your filters.</div>
     {% endif %}
     <div class="mt-4">
-      <a href="{% url 'event_list' %}" class="btn btn-secondary">
-        <i class="bi bi-calendar-event"></i> View Events
-      </a>
+      <a href="{% url 'event_list' %}" class="btn btn-secondary">{% icon "calendar-event" %} View Events</a>
     </div>
   </div>
   <script>
