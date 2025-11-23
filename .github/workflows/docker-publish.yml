@@ -85,6 +85,7 @@ jobs:
           load: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-django:${{ env.BRANCH_NAME }}
           cache-from: type=gha,scope=django
+          cache-to: type=gha,mode=min,scope=django
 
       - name: Build Postgres image
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
