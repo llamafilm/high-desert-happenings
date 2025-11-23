@@ -6,6 +6,7 @@ register = template.Library()
 
 icon_dir = f"{settings.STATICFILES_DIRS[0]}/icons"
 
+
 @register.simple_tag
 def icon(name, css_class="", style=""):
     """Renders an inline SVG icon from static/icons/ with optional custom class and style"""
