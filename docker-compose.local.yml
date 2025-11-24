@@ -43,3 +43,13 @@ services:
         limits:
           cpus: '0.50'
           memory: 512M
+
+  awscli:
+    build:
+      context: .
+      dockerfile: ./compose/production/awscli/Dockerfile
+    image: high_desert_happenings_production_postgres_awscli
+    env_file:
+      - ./.envs/.production/.django
+    volumes:
+      - high_desert_happenings_local_postgres_data_backups:/backups

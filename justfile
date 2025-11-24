@@ -58,3 +58,22 @@ venv:
 # Open a bash shell inside the django container.
 bash:
     @docker compose exec django bash
+
+# Backup the database and upload to S3
+backup:
+    @docker compose exec postgres backup
+    @docker compose exec postgres backups
+    @docker compose run --rm awscli upload
+
+restore_db:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "WARNING: This will overwrite your local database!"
+    echo "Listing DB backups in S3:"
+    docker compose run --rm awscli list
+    read -p "Enter filename to restore: " backup_file
+    docker compose run --rm awscli download "$backup_file"
+    just down
+    echo "Starting Postgres..."
+    docker compose up -d --remove-orphans postgres
+    docker compose exec postgres restore "$backup_file"
