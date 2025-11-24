@@ -1,0 +1,44 @@
+# sed "s/DJANGO_SERVER_NAME/$DJANGO_SERVER_NAME/g" nginx.conf.template > nginx.conf
+
+# Redirect HTTP to HTTPS
+server {
+    listen 80;
+    listen [::]:80;
+    server_name DJANGO_SERVER_NAME;
+    access_log /var/log/nginx/DJANGO_SERVER_NAME_access.log;
+    error_log  /var/log/nginx/DJANGO_SERVER_NAME_error.log;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name DJANGO_SERVER_NAME;
+    access_log /var/log/nginx/DJANGO_SERVER_NAME_access.log;
+    error_log  /var/log/nginx/DJANGO_SERVER_NAME_error.log;
+
+    # SSL Configuration
+    ssl_certificate /etc/letsencrypt/live/DJANGO_SERVER_NAME/fullchain.pem;
+    ssl_certificate_key	/etc/letsencrypt/live/DJANGO_SERVER_NAME/privkey.pem;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+
+    # Deny /metrics requests
+    location /metrics {
+        return 403;
+    }
+
+    # Serve static files directly
+    location /static/ {
+        root /var/www/html/DJANGO_SERVER_NAME/;
+        # expires 30d;
+        # add_header Cache-Control "public, immutable" always;
+    }
+
+    # Proxy to Django application
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

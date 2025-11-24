@@ -286,7 +286,8 @@ SOCIALACCOUNT_ADAPTER = "high_desert_happenings.users.adapters.SocialAccountAdap
 # https://docs.allauth.org/en/latest/socialaccount/configuration.html
 SOCIALACCOUNT_FORMS = {"signup": "high_desert_happenings.users.forms.UserSocialSignupForm"}
 
-
+# Markdownx
+# ------------------------------------------------------------------------------
 MARKDOWNX_UPLOAD_MAX_SIZE = 10_000_000  # 5 MB
 MARKDOWNX_IMAGE_MAX_SIZE = {"size": (500, 500), "quality": 90}
 MARKDOWNX_SVG_JAVASCRIPT_PROTECTION = False

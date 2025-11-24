@@ -9,7 +9,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
-    image: ${REGISTRY}/${IMAGE_NAME}-django:main
+    image: ${REGISTRY:?}/${IMAGE_NAME:?}-django:main
     restart: unless-stopped
     depends_on:
       - postgres
@@ -20,12 +20,14 @@ services:
     command: /start
     ports:
       - '127.0.0.1:5000:5000'
+    volumes:
+      - /var/www/html/${DJANGO_SERVER_NAME:?}/static:/app/staticfiles:rw
 
   postgres:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
-    image: ${REGISTRY}/${IMAGE_NAME}-postgres:main
+    image: ${REGISTRY:?}/${IMAGE_NAME:?}-postgres:main
     restart: unless-stopped
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
@@ -37,7 +39,7 @@ services:
   #   build:
   #     context: .
   #     dockerfile: ./compose/production/traefik/Dockerfile
-  #   image: ${REGISTRY}/${IMAGE_NAME}-traefik
+  #   image: ${REGISTRY:?}/${IMAGE_NAME:?}-traefik
   #   depends_on:
   #     - django
   #   volumes:
@@ -55,7 +57,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/awscli/Dockerfile
-    image: ${REGISTRY}/${IMAGE_NAME}-awscli:main
+    image: ${REGISTRY:?}/${IMAGE_NAME:?}-awscli:main
     env_file:
       - ./.envs/.production/.django
     volumes:
