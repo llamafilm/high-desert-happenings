@@ -79,11 +79,19 @@ class LocationForm(forms.ModelForm):
             "longitude",
         ]
         widgets = {
-            "latitude": forms.NumberInput(attrs={"step": "0.000001"}),
-            "longitude": forms.NumberInput(attrs={"step": "0.000001"}),
+            "phone_number": forms.TextInput(attrs={"type": "tel"}),
+            "latitude": forms.NumberInput(attrs={"step": "0.000001", "inputmode": "decimal"}),
+            "longitude": forms.NumberInput(attrs={"step": "0.000001", "inputmode": "decimal"}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["latitude"].help_text = "Leave blank to geocode from address"
         self.fields["longitude"].help_text = "Leave blank to geocode from address"
+
+        # Disable autofill and password manager detection on all fields
+        for field in self.fields.values():
+            field.widget.attrs["autocomplete"] = "off"
+            field.widget.attrs["data-1p-ignore"] = "true"  # 1Password
+            field.widget.attrs["data-bwignore"] = "true"  # Bitwarden
+            field.widget.attrs["data-lpignore"] = "true"  # LastPass
