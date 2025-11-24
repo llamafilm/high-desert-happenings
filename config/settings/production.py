@@ -96,9 +96,6 @@ STORAGES = {
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-        "OPTIONS": {
-            "location": "static",
-        },
     },
 }
 MEDIA_URL = f"https://{aws_s3_domain}/media/"
