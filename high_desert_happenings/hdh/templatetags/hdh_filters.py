@@ -1,4 +1,5 @@
 import re
+from datetime import time
 
 from django import template
 from django.utils import timezone
@@ -48,3 +49,28 @@ def friendly_datetime(datetime_value):
     date_part = local_datetime.strftime("%B %-d")
     time_part = friendly_time(local_datetime)
     return f"{date_part} at {time_part}"
+
+
+@register.filter(name="time_range")
+def time_range(event):
+    """Return a friendly time range for an event."""
+
+    local_start = timezone.localtime(event.start_datetime)
+    if event.end_datetime:
+        local_end = timezone.localtime(event.end_datetime)
+        if local_start.time() == time(0, 0) and local_end.time() == time(23, 59):
+            if local_start.date() == local_end.date():
+                return f"{local_start.strftime('%B %-d')}, all Day"
+            return f"{local_start.strftime('%B %-d')} - {local_end.strftime('%B %-d')}, all day"
+
+        if local_start.date() == local_end.date():
+            start_str = friendly_time(local_start)
+            end_str = friendly_time(local_end)
+            return f"{local_start.strftime('%B %-d')}, {start_str} - {end_str}"
+
+        return (
+            f"{local_start.strftime('%B %-d')}, {friendly_time(local_start)}"
+            f" - {local_end.strftime('%B %-d')}, {friendly_time(local_end)}"
+        )
+
+    return friendly_datetime(event.start_datetime)

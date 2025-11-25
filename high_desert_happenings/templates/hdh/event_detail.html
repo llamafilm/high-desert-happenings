@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load bootstrap_icons %}
+{% load hdh_filters %}
 
 {% block title %}
   {{ event.name }} - High Desert Happenings
@@ -37,10 +38,7 @@
         </div>
         <div class="mb-3">
           <h5>{% icon "calendar-event" %} When</h5>
-          <p>
-            {{ event.start_datetime|date:"l, F j, Y" }} at {{ event.start_datetime|date:"g:i A" }}
-            {% if event.end_datetime %}- {{ event.end_datetime|date:"g:i A" }}{% endif %}
-          </p>
+          <p>{{ event|time_range }}</p>
           {% if is_part_of_series %}
             <div class="alert alert-info">
               <p class="mb-2">

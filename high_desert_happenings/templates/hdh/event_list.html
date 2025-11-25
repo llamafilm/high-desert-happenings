@@ -125,7 +125,7 @@
                           <h5 class="card-title">{{ event.name }}</h5>
                           <p class="card-text">
                             <strong>{% icon "calendar-event" %} When:</strong>
-                            {{ event.start_datetime|friendly_datetime }}
+                            {{ event|time_range }}
                             {% if event.parent_event or event.recurrence_instances.exists %}
                               <span class="badge bg-info ms-2" title="Part of recurring series">
                                 {% icon "arrow-repeat" %} Recurring

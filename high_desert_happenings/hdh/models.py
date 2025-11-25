@@ -1,5 +1,6 @@
 import logging
 import uuid
+from datetime import time
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
@@ -75,7 +76,7 @@ class Location(models.Model):
     phone_number = models.CharField(_("Phone Number"), max_length=20, blank=True)
     website = models.URLField(_("Website"), max_length=500, blank=True)
     image = models.ImageField(
-        _("Image"),
+        _("Event Image"),
         upload_to=location_image_path,
         blank=True,
         null=True,
@@ -198,7 +199,7 @@ class Event(models.Model):
     """Model for events."""
 
     name = models.CharField(_("Name"), max_length=100)
-    description = MarkdownxField(_("Description"), blank=True)
+    description = MarkdownxField(_("Description"), blank=True, help_text=_("Markdown is supported"))
     image = models.ImageField(
         _("Image"),
         upload_to="events/images/%Y/%m/",
@@ -216,7 +217,7 @@ class Event(models.Model):
     )
     start_datetime = models.DateTimeField(_("Start Date & Time"))
     end_datetime = models.DateTimeField(_("End Date & Time"), blank=True, null=True)
-    webpage_url = models.URLField(_("Webpage URL"), max_length=500, blank=True)
+    webpage_url = models.URLField(_("Event Link"), max_length=500, blank=True)
     is_free = models.BooleanField(
         _("Free Event"),
         null=True,
@@ -229,7 +230,7 @@ class Event(models.Model):
         max_length=10,
         choices=[("children", _("Children")), ("21plus", _("21+"))],
         blank=True,
-        help_text=_("Age requirement for this event (blank = all ages)"),
+        help_text=_("blank = all ages"),
     )
 
     # User tracking and permissions
@@ -309,3 +310,10 @@ class Event(models.Model):
         """Get all future events in this series after this event."""
         series_events = self.get_series_events()
         return series_events.filter(start_datetime__gt=self.start_datetime)
+
+    @property
+    def is_all_day(self):
+        """True if this is an all-day event (start is midnight, end is 23:59)."""
+        all_day_start = time(0, 0)
+        all_day_end = time(23, 59)
+        return self.start_datetime.time() == all_day_start and self.end_datetime.time() == all_day_end

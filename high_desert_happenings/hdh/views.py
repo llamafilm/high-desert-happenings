@@ -413,16 +413,16 @@ class EventUpdateView(LoginRequiredMixin, CanManageEventMixin, UpdateView):
         """Redirect to event detail page after successful update."""
         return self.object.get_absolute_url()
 
+    def get_form_kwargs(self):
+        """Pass show_update_scope to the form."""
+        kwargs = super().get_form_kwargs()
+        kwargs["show_update_scope"] = self.object.is_part_of_series()
+        return kwargs
+
     def get_context_data(self, **kwargs):
         """Add additional context for the template."""
         context = super().get_context_data(**kwargs)
         context["is_part_of_series"] = self.object.is_part_of_series()
-
-        # If editing a series event, show update scope options
-        if context["is_part_of_series"]:
-            context["show_update_scope"] = True
-            context["update_scope"] = self.request.POST.get("update_scope", "single")
-
         return context
 
     def form_valid(self, form):
