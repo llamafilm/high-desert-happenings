@@ -185,6 +185,7 @@ dependencies = [
     "python-slugify==8.0.4",
     "redis==7.0.1",
     "requests>=2.32.5",
+    "sentry-sdk>=1.0.0",
     "django-markdownx>=4.0.9",
     "django-prometheus>=2.4.1",
 ]
