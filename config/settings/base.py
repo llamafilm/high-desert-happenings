@@ -3,6 +3,8 @@
 from pathlib import Path
 
 import environ
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # high_desert_happenings/
@@ -264,6 +266,13 @@ LOGGING = {
     "root": {"level": "INFO", "handlers": ["console"]},
 }
 
+SENTRY_DSN = env("SENTRY_DSN")
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+    )
+    
 REDIS_URL = env("REDIS_URL", default="redis://redis:6379/0")
 REDIS_SSL = REDIS_URL.startswith("rediss://")
 
